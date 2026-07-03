@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Auto-Sweep Bot | Command Reference &amp; API Docs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#690005",
+                      "secondary-fixed-dim": "#47dfa4",
+                      "outline-variant": "#3e484f",
+                      "secondary-fixed": "#69fcbe",
+                      "on-surface": "#dee3e8",
+                      "on-primary": "#003549",
+                      "on-tertiary-fixed-variant": "#5c4200",
+                      "primary-container": "#3abff8",
+                      "surface-container-lowest": "#0a0f12",
+                      "surface-container": "#1b2024",
+                      "on-primary-container": "#004b66",
+                      "on-surface-variant": "#bdc8d0",
+                      "on-secondary-fixed-variant": "#005137",
+                      "surface-container-high": "#252b2e",
+                      "surface": "#0f1417",
+                      "on-secondary": "#003825",
+                      "tertiary": "#ffc544",
+                      "error": "#ffb4ab",
+                      "on-tertiary-fixed": "#261900",
+                      "tertiary-fixed": "#ffdea2",
+                      "primary": "#90d7ff",
+                      "surface-tint": "#78d1ff",
+                      "surface-container-highest": "#303539",
+                      "inverse-on-surface": "#2c3135",
+                      "on-background": "#dee3e8",
+                      "on-error-container": "#ffdad6",
+                      "on-tertiary": "#402d00",
+                      "on-tertiary-container": "#5a4100",
+                      "on-primary-fixed-variant": "#004c68",
+                      "inverse-primary": "#006689",
+                      "inverse-surface": "#dee3e8",
+                      "surface-variant": "#303539",
+                      "on-secondary-fixed": "#002114",
+                      "on-secondary-container": "#00452e",
+                      "primary-fixed": "#c3e8ff",
+                      "secondary-container": "#00bd85",
+                      "surface-dim": "#0f1417",
+                      "surface-container-low": "#171c20",
+                      "error-container": "#93000a",
+                      "secondary": "#47dfa4",
+                      "background": "#0f1417",
+                      "tertiary-container": "#e4a900",
+                      "primary-fixed-dim": "#78d1ff",
+                      "on-primary-fixed": "#001e2c",
+                      "tertiary-fixed-dim": "#fabc22",
+                      "outline": "#87929a",
+                      "surface-bright": "#343a3e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-sm": "0.5rem",
+                      "container-max": "600px",
+                      "stack-md": "1rem",
+                      "inset-pad": "1.25rem",
+                      "gutter": "1rem",
+                      "stack-lg": "2rem"
+              },
+              "fontFamily": {
+                      "code-block": ["JetBrains Mono"],
+                      "label-caps": ["JetBrains Mono"],
+                      "headline-lg": ["JetBrains Mono"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["JetBrains Mono"],
+                      "headline-md": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "code-block": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                      "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0f1417;
+            color: #dee3e8;
+        }
+        .mono-card {
+            background: #141517;
+            border: 1px solid #26292E;
+        }
+        .command-block {
+            background: #000000;
+            border-left: 3px solid #3ABFF8;
+            position: relative;
+        }
+        .terminal-grid {
+            background-image: linear-gradient(#1A1C1E 1px, transparent 1px), linear-gradient(90deg, #1A1C1E 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .security-gate-pass {
+            background: #47dfa4;
+            color: #002114;
+        }
+        .hash-connector {
+            border-left: 1px dashed #26292E;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f1417; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3e484f; }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-on-scroll.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-on-scroll { transition: none; opacity: 1; transform: none; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-inset-pad h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-on-surface">Auto-Sweep Bot</span>
+<div class="hidden md:flex gap-6 items-center ml-8">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../security_threat_model/code.html">Security</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../how_it_works_architecture/code.html">Architecture</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="../command_reference_docs/code.html">Docs</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../build_log_changelog/code.html">Changelog</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../status_roadmap/code.html">Status</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-label-caps text-label-caps text-tertiary border border-tertiary px-3 py-1">DEVNET ONLY</span>
+<button class="lg:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<div class="flex flex-1 pt-16">
+<!-- SideNavBar -->
+<aside class="hidden lg:flex flex-col h-[calc(100vh-64px)] sticky top-16 w-64 bg-surface-container border-r border-outline-variant">
+<div class="p-inset-pad border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-sm">terminal</span>
+</div>
+<div>
+<div class="font-code-block text-code-block text-primary">System Console</div>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 custom-scrollbar">
+<nav class="space-y-1">
+<a class="flex items-center px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">security</span>
+<span class="font-code-block text-code-block">Security</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">account_tree</span>
+<span class="font-code-block text-code-block">Architecture</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 bg-primary-container text-on-primary-container rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-sm" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-code-block text-code-block">Docs</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">history</span>
+<span class="font-code-block text-code-block">Changelog</span>
+</a>
+<a class="flex items-center px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3 text-sm">help</span>
+<span class="font-code-block text-code-block">FAQ</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 terminal-grid">
+<div class="max-w-4xl mx-auto px-inset-pad py-stack-lg">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 mb-8">
+<span class="font-label-caps text-label-caps text-on-surface-variant">CORE</span>
+<span class="material-symbols-outlined text-xs text-outline">chevron_right</span>
+<span class="font-label-caps text-label-caps text-primary">COMMAND_REFERENCE</span>
+</div>
+<header class="mb-12">
+<h1 class="font-headline-lg text-headline-lg mb-4">Command Reference</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                        Technical specifications for the Auto-Sweep Bot CLI. All commands are strictly typed and require cryptographic validation for fund-moving operations.
+                    </p>
+</header>
+<!-- Section 1: Setup & Allowlisting -->
+<section class="mb-16 reveal-on-scroll">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps px-2 py-0.5 security-gate-pass rounded-sm">PHASE 01</span>
+<h2 class="font-headline-md text-headline-md">Setup &amp; Allowlisting</h2>
+</div>
+<div class="mono-card p-inset-pad rounded-lg mb-6">
+<p class="font-body-md text-body-md mb-4">Access is a fixed allowlist of Telegram accounts, set in the bot's configuration before it ever runs. There's no in-bot signup or request-access command. Your ID has to be added by whoever runs the bot before anything below works.</p>
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">OBTAIN YOUR NUMERIC ID (not a bot command, a separate public bot)</div>
+<div class="command-block p-4 rounded-r-md group">
+<button class="absolute right-4 top-4 font-label-caps text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="copyToClipboard('@userinfobot')">COPY</button>
+<code class="font-code-block text-code-block text-primary-fixed">@userinfobot</code>
+<div class="mt-2 text-outline text-xs italic">// Message this on Telegram. Send the numeric ID it returns, not your @username, to whoever manages the allowlist.</div>
+</div>
+<div class="mt-6 font-label-caps text-label-caps text-on-surface-variant mb-2">ADMIN LOGIN (DM ONLY)</div>
+<div class="command-block p-4 rounded-r-md group">
+<button class="absolute right-4 top-4 font-label-caps text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="copyToClipboard('/login &lt;username&gt; &lt;password&gt;')">COPY</button>
+<code class="font-code-block text-code-block text-primary-fixed">/login &lt;username&gt; &lt;password&gt;</code>
+<div class="mt-2 text-outline text-xs italic">// Starts a 30-minute admin session. Password is argon2-hashed, never stored or logged in plaintext. /logout ends it early.</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Read-only Commands -->
+<section class="mb-16 reveal-on-scroll">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps px-2 py-0.5 security-gate-pass rounded-sm">PHASE 02</span>
+<h2 class="font-headline-md text-headline-md">Read-only Commands</h2>
+</div>
+<p class="font-body-md text-body-md mb-6 text-on-surface-variant">These commands do not trigger state changes on-chain and are safe for use in group contexts.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="mono-card p-4 rounded">
+<div class="font-label-caps text-label-caps text-secondary mb-2">RECOGNITION CHECK</div>
+<div class="command-block p-3 rounded-r">
+<code class="font-code-block text-code-block text-primary-fixed">/whoami</code>
+</div>
+<div class="mt-2 font-code-block text-[12px] text-outline">Response: your Telegram ID + current session status</div>
+</div>
+<div class="mono-card p-4 rounded">
+<div class="font-label-caps text-label-caps text-secondary mb-2">WALLET STATUS (needs an active session)</div>
+<div class="command-block p-3 rounded-r">
+<code class="font-code-block text-code-block text-primary-fixed">/status</code>
+</div>
+<div class="mt-2 font-code-block text-[12px] text-outline">Response: wallet address + live SOL balance, read-only</div>
+</div>
+</div>
+</section>
+<!-- Section 3: DM-only Fund-Moving Commands -->
+<section class="mb-16 reveal-on-scroll">
+<div class="flex items-center gap-3 mb-6">
+<span class="font-label-caps text-label-caps px-2 py-0.5 bg-error-container text-on-error-container rounded-sm">RESTRICTED</span>
+<h2 class="font-headline-md text-headline-md">Fund-Moving Operations</h2>
+</div>
+<div class="bg-error-container/10 border-l-4 border-error p-4 mb-6">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-error">warning</span>
+<p class="font-body-md text-body-md text-on-error-container">
+<strong>STRICT DM PROTOCOL:</strong> The following commands are ignored if called from a group chat. If a password or OTP gets typed into a group by mistake, the bot deletes that message (if it has permission) and burns the OTP immediately so it can't be reused. There's no account freeze, just an immediate scrub.
+                            </p>
+</div>
+</div>
+<div class="mono-card p-inset-pad rounded-lg mb-6">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">FORCE AN IMMEDIATE SWEEP</div>
+<div class="command-block p-4 rounded-r-md group">
+<button class="absolute right-4 top-4 font-label-caps text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="copyToClipboard('/sweep &lt;otp&gt;')">COPY</button>
+<code class="font-code-block text-code-block text-primary-fixed">/sweep &lt;otp&gt;</code>
+<div class="mt-2 text-outline text-xs italic">// Incoming tokens are already swept automatically in the background with no command. This just forces an immediate pass over the whole wallet.</div>
+</div>
+</div>
+<div class="mono-card p-inset-pad rounded-lg">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">SPLIT-SEND SYNTAX</div>
+<div class="command-block p-6 rounded-r-md group mb-8">
+<button class="absolute right-4 top-4 font-label-caps text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="copyToClipboard('/send &lt;otp&gt; send 1 to alice, 2 to bob')">COPY</button>
+<code class="font-code-block text-code-block text-primary-fixed leading-relaxed">
+                                /send &lt;otp&gt; send [amount] to [alias/address], ...
+                            </code>
+<div class="mt-4 border-t border-outline-variant pt-4">
+<div class="font-label-caps text-[10px] text-outline mb-2 uppercase">EXAMPLE EXECUTION</div>
+<code class="text-secondary text-[13px]">/send 982103 send 1.5 to alice, 0.2 to bob</code>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4">
+<div class="w-1 h-1 mt-2.5 rounded-full bg-primary shrink-0"></div>
+<div>
+<span class="font-code-block text-code-block text-primary">otp:</span>
+<span class="font-body-md text-body-md text-on-surface-variant"> 6-digit code from your authenticator app, required fresh even mid-session, burned after one use, so the same code can never be replayed.</span>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-1 h-1 mt-2.5 rounded-full bg-primary shrink-0"></div>
+<div>
+<span class="font-code-block text-code-block text-primary">alias:</span>
+<span class="font-body-md text-body-md text-on-surface-variant"> A name from the admin-maintained contacts list, or a literal wallet address typed directly. The bot can never invent a payout destination from free text.</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Error States Table -->
+<section class="mb-16 reveal-on-scroll">
+<h2 class="font-headline-md text-headline-md mb-6">Security &amp; Error Handling</h2>
+<div class="mono-card rounded-lg overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high border-b border-outline-variant">
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface">ERROR_CODE</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface">DESCRIPTION</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface">SYSTEM_RESPONSE</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4 font-code-block text-[12px] text-error">ERR_UNK_CONTACT</td>
+<td class="px-6 py-4 font-body-md text-body-md">Recipient isn't a known contact or a valid address.</td>
+<td class="px-6 py-4 font-label-caps text-[10px] text-outline">TX_REJECTED</td>
+</tr>
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4 font-code-block text-[12px] text-error">ERR_OTP_INVALID</td>
+<td class="px-6 py-4 font-body-md text-body-md">Code doesn't match the current TOTP window, or is missing entirely.</td>
+<td class="px-6 py-4 font-label-caps text-[10px] text-outline">AUTH_FAIL_RETRY</td>
+</tr>
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4 font-code-block text-[12px] text-error">ERR_OTP_REPLAY</td>
+<td class="px-6 py-4 font-body-md text-body-md">Code was already used once: burned on first use, can't be replayed.</td>
+<td class="px-6 py-4 font-label-caps text-[10px] text-outline">AUTH_FAIL_RETRY</td>
+</tr>
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4 font-code-block text-[12px] text-error">ERR_SLIPPAGE</td>
+<td class="px-6 py-4 font-body-md text-body-md">Swap would exceed the configured slippage ceiling (default 1%).</td>
+<td class="px-6 py-4 font-label-caps text-[10px] text-outline">HALT_SWAP</td>
+</tr>
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4 font-code-block text-[12px] text-error">ERR_IMPACT_H</td>
+<td class="px-6 py-4 font-body-md text-body-md">Route's price impact exceeds the 5% ceiling, rejected before it's ever signed.</td>
+<td class="px-6 py-4 font-label-caps text-[10px] text-outline">HALT_SWAP</td>
+</tr>
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4 font-code-block text-[12px] text-on-error-container bg-error-container/20">ERR_SECRET_IN_GROUP</td>
+<td class="px-6 py-4 font-body-md text-body-md">Password or OTP typed outside a DM.</td>
+<td class="px-6 py-4 font-label-caps text-[10px] text-error font-bold">MSG_SCRUBBED + OTP_BURNED</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 5-Phase Gated Timeline -->
+<div class="mb-16">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-6 uppercase">Execution Pipeline</h3>
+<div class="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 relative">
+<div class="absolute top-1/2 left-0 w-full h-[1px] bg-outline-variant hidden md:block -z-10"></div>
+<div class="flex flex-col items-center group">
+<div class="w-8 h-8 rounded-sm security-gate-pass flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="font-label-caps text-[9px] text-outline">12:00:01</span>
+<span class="font-code-block text-[11px] mt-1">PARSE</span>
+</div>
+<div class="flex flex-col items-center group">
+<div class="w-8 h-8 rounded-sm security-gate-pass flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="font-label-caps text-[9px] text-outline">12:00:03</span>
+<span class="font-code-block text-[11px] mt-1">AUTH</span>
+</div>
+<div class="flex flex-col items-center group">
+<div class="w-10 h-10 rounded-sm border-2 border-primary bg-primary/10 flex items-center justify-center mb-2 animate-pulse">
+<div class="w-2 h-2 bg-primary"></div>
+</div>
+<span class="font-label-caps text-[9px] text-primary">ACTIVE</span>
+<span class="font-code-block text-[11px] mt-1">VALIDATE</span>
+</div>
+<div class="flex flex-col items-center group">
+<div class="w-8 h-8 rounded-sm border border-outline-variant flex items-center justify-center mb-2"></div>
+<span class="font-label-caps text-[9px] text-outline">--:--:--</span>
+<span class="font-code-block text-[11px] mt-1">BROADCAST</span>
+</div>
+<div class="flex flex-col items-center group">
+<div class="w-8 h-8 rounded-sm border border-outline-variant flex items-center justify-center mb-2"></div>
+<span class="font-label-caps text-[9px] text-outline">--:--:--</span>
+<span class="font-code-block text-[11px] mt-1">CONFIRM</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant w-full">
+<div class="w-full px-inset-pad py-stack-lg max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col gap-2">
+<span class="font-headline-md text-headline-md text-on-surface">Auto-Sweep Bot</span>
+<span class="font-label-caps text-label-caps text-secondary-fixed-dim">Auto-Sweep Bot Security Framework</span>
+</div>
+<div class="grid grid-cols-2 gap-x-12 gap-y-2">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../security_threat_model/code.html">Review Security Model</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../command_reference_docs/code.html">View Command Reference</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../how_it_works_architecture/code.html">Architecture</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../command_reference_docs/code.html">API Docs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../security_threat_model/code.html">Audit Logs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../status_roadmap/code.html">Uptime Status</a>
+</div>
+</div>
+</footer>
+<script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 bg-secondary text-on-secondary px-6 py-2 rounded-full font-label-caps shadow-lg z-[100] animate-bounce';
+                toast.textContent = 'COPIED TO CLIPBOARD';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+            });
+        }
+    </script>
+<script>
+        document.querySelectorAll('.reveal-on-scroll').forEach((el, i) => {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => entry.target.classList.add('active'), (i % 4) * 80);
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            io.observe(el);
+        });
+    </script>
+</body></html>
