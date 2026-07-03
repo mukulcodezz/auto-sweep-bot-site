@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FAQ | Auto-Sweep Bot Security Framework</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        :root {
+            --level-0: #0f1417;
+            --level-1: #141517;
+            --level-2: #000000;
+            --border-color: #26292E;
+            --primary-accent: #3ABFF8;
+        }
+        body {
+            background-color: var(--level-0);
+            color: #dee3e8;
+            -webkit-font-smoothing: antialiased;
+        }
+        .terminal-border {
+            border: 1px solid var(--border-color);
+        }
+        .command-block {
+            background-color: var(--level-2);
+            border-left: 3px solid var(--primary-accent);
+        }
+        .status-segment {
+            height: 4px;
+            background-color: #1A1C1E;
+            flex-grow: 1;
+            margin: 0 2px;
+        }
+        .status-segment.active {
+            background-color: var(--primary-accent);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-on-scroll.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-on-scroll { transition: none; opacity: 1; transform: none; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "secondary-fixed-dim": "#47dfa4",
+                        "outline-variant": "#3e484f",
+                        "secondary-fixed": "#69fcbe",
+                        "on-surface": "#dee3e8",
+                        "on-primary": "#003549",
+                        "on-tertiary-fixed-variant": "#5c4200",
+                        "primary-container": "#3abff8",
+                        "surface-container-lowest": "#0a0f12",
+                        "surface-container": "#1b2024",
+                        "on-primary-container": "#004b66",
+                        "on-surface-variant": "#bdc8d0",
+                        "on-secondary-fixed-variant": "#005137",
+                        "surface-container-high": "#252b2e",
+                        "surface": "#0f1417",
+                        "on-secondary": "#003825",
+                        "tertiary": "#ffc544",
+                        "error": "#ffb4ab",
+                        "on-tertiary-fixed": "#261900",
+                        "tertiary-fixed": "#ffdea2",
+                        "primary": "#90d7ff",
+                        "surface-tint": "#78d1ff",
+                        "surface-container-highest": "#303539",
+                        "inverse-on-surface": "#2c3135",
+                        "on-background": "#dee3e8",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#402d00",
+                        "on-tertiary-container": "#5a4100",
+                        "on-primary-fixed-variant": "#004c68",
+                        "inverse-primary": "#006689",
+                        "inverse-surface": "#dee3e8",
+                        "surface-variant": "#303539",
+                        "on-secondary-fixed": "#002114",
+                        "on-secondary-container": "#00452e",
+                        "primary-fixed": "#c3e8ff",
+                        "secondary-container": "#00bd85",
+                        "surface-dim": "#0f1417",
+                        "surface-container-low": "#171c20",
+                        "error-container": "#93000a",
+                        "secondary": "#47dfa4",
+                        "background": "#0f1417",
+                        "tertiary-container": "#e4a900",
+                        "primary-fixed-dim": "#78d1ff",
+                        "on-primary-fixed": "#001e2c",
+                        "tertiary-fixed-dim": "#fabc22",
+                        "outline": "#87929a",
+                        "surface-bright": "#343a3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-sm": "0.5rem",
+                        "container-max": "600px",
+                        "stack-md": "1rem",
+                        "inset-pad": "1.25rem",
+                        "gutter": "1rem",
+                        "stack-lg": "2rem"
+                    },
+                    "fontFamily": {
+                        "code-block": ["JetBrains Mono"],
+                        "label-caps": ["JetBrains Mono"],
+                        "headline-lg": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["JetBrains Mono"],
+                        "headline-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "code-block": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-body-md text-body-md selection:bg-primary selection:text-on-primary">
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-inset-pad h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-on-surface dark:text-on-surface">Auto-Sweep Bot</span>
+</div>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors transition-all duration-200" href="../security_threat_model/code.html">Security</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors transition-all duration-200" href="../how_it_works_architecture/code.html">Architecture</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors transition-all duration-200" href="../command_reference_docs/code.html">Docs</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors transition-all duration-200" href="../build_log_changelog/code.html">Changelog</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors transition-all duration-200" href="../status_roadmap/code.html">Status</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1 transition-colors transition-all duration-200" href="../skeptical_faq/code.html">FAQ</a>
+</nav>
+<div class="flex items-center">
+<span class="font-label-caps text-label-caps text-tertiary border border-tertiary px-3 py-1">DEVNET ONLY</span>
+</div>
+</header>
+<div class="flex pt-16 min-h-screen">
+<!-- SideNavBar Shell -->
+<aside class="hidden lg:flex flex-col h-screen sticky top-16 bg-surface-container dark:bg-surface-container border-r border-outline-variant w-64">
+<div class="p-inset-pad flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">terminal</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-primary leading-tight">System Console</div>
+</div>
+</div>
+<nav class="mt-4 flex-grow font-code-block text-code-block">
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span> Security
+                </a>
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span> Architecture
+                </a>
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span> Docs
+                </a>
+<a class="flex items-center gap-3 py-3 px-4 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span> Changelog
+                </a>
+<a class="flex items-center gap-3 py-3 px-4 bg-primary-container text-on-primary-container rounded-lg mx-2 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span> FAQ
+                </a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow max-w-container-max mx-auto px-inset-pad py-stack-lg">
+<header class="mb-stack-lg">
+<div class="font-label-caps text-label-caps text-secondary mb-2">FAQ</div>
+<h1 class="font-headline-lg text-headline-lg mb-4 uppercase tracking-wider">Operational Queries</h1>
+<div class="flex items-center gap-2 mb-8">
+<div class="flex gap-1 w-32">
+<div class="status-segment active"></div>
+<div class="status-segment active"></div>
+<div class="status-segment active"></div>
+<div class="status-segment active"></div>
+<div class="status-segment active"></div>
+<div class="status-segment"></div>
+<div class="status-segment"></div>
+</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">READY_STATE: VERIFIED</span>
+</div>
+</header>
+<section class="space-y-stack-md">
+<!-- FAQ Entry 1 -->
+<div class="terminal-border bg-surface-container-low p-inset-pad rounded reveal-on-scroll">
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">Who controls the private key?</h3>
+<span class="font-label-caps text-label-caps text-outline px-2 py-0.5 border border-outline">AUTH_01</span>
+</div>
+<p class="text-on-surface-variant font-body-md mb-4">
+                        Command-parsing and Telegram-handling code never touch the key directly. It lives behind an isolated Signer module. Today that's a local AES-256-GCM encrypted keystore file (devnet/testnet); the same interface is built to swap in a real KMS/HSM custody backend, and the bot's config loader hard-refuses to start against mainnet until that swap happens.
+                    </p>
+<a class="inline-flex items-center gap-2 text-primary font-label-caps text-label-caps hover:underline" href="#">
+<span class="material-symbols-outlined text-[14px]">shield</span> VIEW SECURITY MODEL
+                    </a>
+</div>
+<!-- FAQ Entry 2 -->
+<div class="terminal-border bg-surface-container-low p-inset-pad rounded reveal-on-scroll">
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">What happens if Telegram is compromised?</h3>
+<span class="font-label-caps text-label-caps text-outline px-2 py-0.5 border border-outline">RISK_02</span>
+</div>
+<p class="text-on-surface-variant font-body-md mb-4">
+                        Straight answer: a compromised, already-logged-in session with a live OTP code can still authorize a fund-moving command. This is wallet-custody software, not a Telegram-account-security product. What limits the damage: every fund-moving command needs a fresh OTP even mid-session, and that code is burned after one use, so a captured code can't be replayed a second time. If your Telegram account is compromised, treat your admin password and OTP secret as compromised too and rotate them immediately.
+                    </p>
+<a class="inline-flex items-center gap-2 text-primary font-label-caps text-label-caps hover:underline" href="#">
+<span class="material-symbols-outlined text-[14px]">account_tree</span> ARCHITECTURE SPECS
+                    </a>
+</div>
+<!-- FAQ Entry 3 -->
+<div class="terminal-border bg-surface-container-low p-inset-pad rounded reveal-on-scroll">
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">Why Telegram at all?</h3>
+<span class="font-label-caps text-label-caps text-outline px-2 py-0.5 border border-outline">PLAT_03</span>
+</div>
+<p class="text-on-surface-variant font-body-md mb-4">
+                        It's the interface most admins already have installed, and works equally well in a DM or a group for status updates. It's not the security boundary, though. Access is gated by a separate Telegram-ID allowlist, password, and OTP layer regardless of which chat app is in front of it.
+                    </p>
+</div>
+<!-- FAQ Entry 4 -->
+<div class="terminal-border bg-surface-container-low p-inset-pad rounded reveal-on-scroll">
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">Is this on mainnet?</h3>
+<span class="font-label-caps text-label-caps text-outline px-2 py-0.5 border border-outline">NET_04</span>
+</div>
+<p class="text-on-surface-variant font-body-md mb-4">
+                        No, devnet only, and that's enforced in code, not just policy: the config loader refuses to start against mainnet-beta unless a real KMS/custody signer is configured in place of the local keystore. An internal security review plus an independent test pass already happened at this stage. Both found and fixed real issues before this page existed.
+                    </p>
+<div class="flex gap-2 mt-4">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant">STATUS: DEVNET_ONLY</span>
+<span class="bg-surface-container-highest px-3 py-1 rounded-full font-label-caps text-label-caps text-on-surface-variant">AUDIT: PENDING</span>
+</div>
+</div>
+<!-- FAQ Entry 5 (Bento Style/Technical Highlight) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="terminal-border bg-surface-container-low p-inset-pad rounded col-span-1 md:col-span-2 reveal-on-scroll">
+<div class="flex justify-between items-start mb-3">
+<h3 class="font-headline-md text-headline-md text-on-surface">Tamper-proof log details</h3>
+<span class="font-label-caps text-label-caps text-outline px-2 py-0.5 border border-outline">LOG_05</span>
+</div>
+<p class="text-on-surface-variant font-body-md mb-4">
+                            Every command attempt (allowed or denied) is written to a local append-only log where each entry's hash includes the previous entry's hash. Editing or deleting a past line breaks the chain for everything after it, and that break is detectable by re-verifying the chain. This runs on the same machine as the bot, not a separate decentralized store: it makes tampering <em>detectable</em>, not physically impossible for someone with direct filesystem access.
+                        </p>
+<div class="command-block p-inset-pad relative mt-4">
+<span class="absolute top-2 right-4 font-label-caps text-label-caps text-outline">COPY</span>
+<code class="font-code-block text-code-block text-primary block">
+                                { "ts": "2026-07-03T14:02:11Z",<br/>
+                                &nbsp;&nbsp;"telegramId": "540291",<br/>
+                                &nbsp;&nbsp;"command": "send",<br/>
+                                &nbsp;&nbsp;"success": true,<br/>
+                                &nbsp;&nbsp;"prevHash": "a3f1...", "hash": "8c92..." }
+                            </code>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Navigation for mobile -->
+<div class="md:hidden fixed bottom-0 left-0 w-full bg-surface-container border-t border-outline-variant flex justify-around py-2">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-label-caps text-[9px]">SECURITY</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="font-label-caps text-[9px]">ARCH</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-caps text-[9px]">FAQ</span>
+</a>
+</div>
+</main>
+</div>
+<!-- Footer Shell -->
+<footer class="w-full bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant">
+<div class="w-full px-inset-pad py-stack-lg max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div>
+<div class="font-headline-md text-headline-md text-on-surface mb-2">Auto-Sweep Bot</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-80">Auto-Sweep Bot Security Framework</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-2">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../security_threat_model/code.html">Review Security Model</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../command_reference_docs/code.html">View Command Reference</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../how_it_works_architecture/code.html">Architecture</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../command_reference_docs/code.html">API Docs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../security_threat_model/code.html">Audit Logs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-all" href="../status_roadmap/code.html">Uptime Status</a>
+</div>
+</div>
+<div class="mt-stack-lg flex items-center gap-4">
+<div class="h-[1px] flex-grow bg-outline-variant"></div>
+<div class="flex gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">NODE_CONNECTED</span>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction: Smooth hover for command blocks
+        const commandBlocks = document.querySelectorAll('.command-block');
+        commandBlocks.forEach(block => {
+            block.addEventListener('mouseenter', () => {
+                block.style.boxShadow = "0 0 10px rgba(58, 191, 248, 0.2)";
+            });
+            block.addEventListener('mouseleave', () => {
+                block.style.boxShadow = "none";
+            });
+        });
+    </script>
+<script>
+        document.querySelectorAll('.reveal-on-scroll').forEach((el, i) => {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => entry.target.classList.add('active'), (i % 5) * 80);
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            io.observe(el);
+        });
+    </script>
+</body></html>
