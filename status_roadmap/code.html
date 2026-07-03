@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Auto-Sweep Bot | System Status</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#47dfa4",
+                    "outline-variant": "#3e484f",
+                    "secondary-fixed": "#69fcbe",
+                    "on-surface": "#dee3e8",
+                    "on-primary": "#003549",
+                    "on-tertiary-fixed-variant": "#5c4200",
+                    "primary-container": "#3abff8",
+                    "surface-container-lowest": "#0a0f12",
+                    "surface-container": "#1b2024",
+                    "on-primary-container": "#004b66",
+                    "on-surface-variant": "#bdc8d0",
+                    "on-secondary-fixed-variant": "#005137",
+                    "surface-container-high": "#252b2e",
+                    "surface": "#0f1417",
+                    "on-secondary": "#003825",
+                    "tertiary": "#ffc544",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed": "#261900",
+                    "tertiary-fixed": "#ffdea2",
+                    "primary": "#90d7ff",
+                    "surface-tint": "#78d1ff",
+                    "surface-container-highest": "#303539",
+                    "inverse-on-surface": "#2c3135",
+                    "on-background": "#dee3e8",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary": "#402d00",
+                    "on-tertiary-container": "#5a4100",
+                    "on-primary-fixed-variant": "#004c68",
+                    "inverse-primary": "#006689",
+                    "inverse-surface": "#dee3e8",
+                    "surface-variant": "#303539",
+                    "on-secondary-fixed": "#002114",
+                    "on-secondary-container": "#00452e",
+                    "primary-fixed": "#c3e8ff",
+                    "secondary-container": "#00bd85",
+                    "surface-dim": "#0f1417",
+                    "surface-container-low": "#171c20",
+                    "error-container": "#93000a",
+                    "secondary": "#47dfa4",
+                    "background": "#0f1417",
+                    "tertiary-container": "#e4a900",
+                    "primary-fixed-dim": "#78d1ff",
+                    "on-primary-fixed": "#001e2c",
+                    "tertiary-fixed-dim": "#fabc22",
+                    "outline": "#87929a",
+                    "surface-bright": "#343a3e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "0.5rem",
+                    "container-max": "600px",
+                    "stack-md": "1rem",
+                    "inset-pad": "1.25rem",
+                    "gutter": "1rem",
+                    "stack-lg": "2rem"
+            },
+            "fontFamily": {
+                    "code-block": ["JetBrains Mono"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-lg": ["JetBrains Mono"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["JetBrains Mono"],
+                    "headline-md": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "code-block": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0f1417;
+            color: #dee3e8;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .structural-line { border: 1px solid #1A1C1E; }
+        .terminal-glow { box-shadow: 0 0 0 1px #90d7ff; }
+        .status-segment { height: 8px; width: 100%; background: #1A1C1E; }
+        .status-segment-active { background: #3abff8; }
+        .dash-line { border-left: 1px dashed #26292E; }
+        .node { width: 4px; height: 4px; background: #26292E; margin-left: -2.5px; }
+        .node-active { background: #3abff8; }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-on-scroll.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-on-scroll { transition: none; opacity: 1; transform: none; }
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- TopNavBar from JSON -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-inset-pad h-16 bg-surface border-b border-outline-variant">
+<div class="font-headline-md text-headline-md text-on-surface">Auto-Sweep Bot</div>
+<nav class="hidden md:flex gap-gutter">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../security_threat_model/code.html">Security</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../how_it_works_architecture/code.html">Architecture</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../command_reference_docs/code.html">Docs</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../build_log_changelog/code.html">Changelog</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="../status_roadmap/code.html">Status</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="../skeptical_faq/code.html">FAQ</a>
+</nav>
+<span class="font-label-caps text-label-caps text-tertiary border border-tertiary px-3 py-1">DEVNET ONLY</span>
+</header>
+<div class="flex pt-16 min-h-screen">
+<!-- SideNavBar from JSON -->
+<aside class="hidden lg:flex flex-col h-[calc(100vh-4rem)] sticky top-16 border-r border-outline-variant w-64 bg-surface-container shrink-0">
+<div class="p-inset-pad border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">terminal</span>
+<div>
+<div class="font-headline-md text-headline-md text-primary">System Console</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-stack-md flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg font-code-block text-code-block" href="#">
+<span class="material-symbols-outlined">security</span> Security
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg font-code-block text-code-block" href="#">
+<span class="material-symbols-outlined">account_tree</span> Architecture
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg font-code-block text-code-block" href="#">
+<span class="material-symbols-outlined">description</span> Docs
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 mx-2 text-on-surface-variant hover:bg-surface-variant transition-colors rounded-lg font-code-block text-code-block" href="#">
+<span class="material-symbols-outlined">history</span> Changelog
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 mx-2 bg-primary-container text-on-primary-container transition-colors rounded-lg font-code-block text-code-block" href="#">
+<span class="material-symbols-outlined">help</span> FAQ
+                </a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 max-w-full">
+<!-- Hero / System Status -->
+<section class="border-b border-outline-variant bg-surface-container-low px-inset-pad py-stack-lg">
+<div class="max-w-container-max mx-auto space-y-stack-md">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps text-primary">SYSTEM_STATE: READ_ONLY</span>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-fixed font-label-caps text-label-caps rounded">OPERATIONAL</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Devnet only. Single wallet support.</h1>
+<p class="text-on-surface-variant max-w-md">System is currently restricted to Solana Devnet environments for safety validation. Mainnet access is globally locked.</p>
+<!-- Terminal Status Bar -->
+<div class="space-y-1">
+<div class="flex justify-between font-label-caps text-label-caps text-on-surface-variant">
+<span>DEVNET_BOOT_CHECK</span>
+<span>100% SUCCESS</span>
+</div>
+<div class="flex gap-1">
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+<div class="status-segment status-segment-active"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Boot Blockers (Mainnet Gate) -->
+<section class="border-b border-outline-variant bg-black px-inset-pad py-stack-lg">
+<div class="max-w-container-max mx-auto">
+<div class="flex items-start gap-gutter">
+<div class="bg-error-container p-3 rounded shrink-0">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<div class="space-y-stack-sm">
+<h2 class="font-headline-md text-headline-md text-error">MAINNET_GATE: BLOCKED</h2>
+<p class="text-on-surface-variant">A KMS/custody signer requirement is a mandatory boot-blocker, enforced in the config loader itself. The bot will not sign a single mainnet transaction while it's still running on the local encrypted keystore.</p>
+<!-- Monospace Command Block -->
+<div class="relative bg-black border-l-4 border-primary p-4 mt-stack-md font-code-block text-code-block text-primary-fixed">
+<span class="absolute top-2 right-2 font-label-caps text-label-caps text-on-surface-variant opacity-50">STRICT_MODE</span>
+<code>&gt; FATAL: MAINNET_ENV_DETECTED<br/>&gt; ERROR: KMS_SIGNER_NOT_FOUND<br/>&gt; ACTION: SYSTEM_HALT</code>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Roadmap Gated Timeline -->
+<section class="px-inset-pad py-stack-lg bg-surface">
+<div class="max-w-container-max mx-auto">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-stack-lg">FORTHCOMING_RELEASES_STAGED</h3>
+<div class="space-y-0">
+<!-- Step 1: Completed -->
+<div class="flex gap-gutter reveal-on-scroll">
+<div class="flex flex-col items-center">
+<div class="w-4 h-4 bg-secondary border border-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[10px] text-on-secondary font-bold">check</span>
+</div>
+<div class="w-px h-full dash-line"></div>
+</div>
+<div class="pb-stack-lg">
+<div class="font-label-caps text-label-caps text-secondary">DONE [2026-07-03]</div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Auth, Vault, Auto-Sweep, Splitter</h4>
+<p class="text-on-surface-variant mt-1 text-body-md">Core logic built and running on Solana Devnet, including an internal security review and an independent test pass.</p>
+</div>
+</div>
+<!-- Step 2: Active -->
+<div class="flex gap-gutter reveal-on-scroll">
+<div class="flex flex-col items-center">
+<div class="w-4 h-4 border border-primary animate-pulse flex items-center justify-center">
+<div class="w-2 h-2 bg-primary"></div>
+</div>
+<div class="w-px h-full dash-line"></div>
+</div>
+<div class="pb-stack-lg">
+<div class="font-label-caps text-label-caps text-primary">CURRENT_PHASE</div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Wiring a real custody signer</h4>
+<p class="text-on-surface-variant mt-1 text-body-md">The KMS/custody Signer interface is built (generic HTTP contract for a Turnkey/Fireblocks/self-hosted backend), not yet connected to a live provider.</p>
+</div>
+</div>
+<!-- Step 3: Future -->
+<div class="flex gap-gutter reveal-on-scroll">
+<div class="flex flex-col items-center">
+<div class="w-4 h-4 border border-outline-variant"></div>
+<div class="w-px h-full dash-line"></div>
+</div>
+<div class="pb-stack-lg">
+<div class="font-label-caps text-label-caps text-on-surface-variant">NOT YET COMMITTED</div>
+<h4 class="font-headline-md text-headline-md text-on-surface opacity-50">Multi-wallet support</h4>
+<p class="text-on-surface-variant mt-1 text-body-md opacity-50">One bot instance manages one wallet today. No committed timeline for multi-wallet support yet.</p>
+</div>
+</div>
+<!-- Step 4: Final -->
+<div class="flex gap-gutter reveal-on-scroll">
+<div class="flex flex-col items-center">
+<div class="w-4 h-4 border border-outline-variant"></div>
+</div>
+<div class="pb-stack-lg">
+<div class="font-label-caps text-label-caps text-on-surface-variant">MAINNET_TRANSITION</div>
+<h4 class="font-headline-md text-headline-md text-on-surface opacity-50">Small-float mainnet run</h4>
+<p class="text-on-surface-variant mt-1 text-body-md opacity-50">Once a real custody signer is live: start with a limited float and watch the audit log before trusting it with real size.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer from JSON -->
+<footer class="w-full border-t border-outline-variant bg-surface-container-lowest py-stack-lg">
+<div class="max-w-container-max mx-auto px-inset-pad">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div>
+<div class="font-headline-md text-headline-md text-on-surface mb-stack-sm">Auto-Sweep Bot</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Auto-Sweep Bot Security Framework</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<nav class="flex flex-col gap-2">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-opacity opacity-80 hover:opacity-100" href="../security_threat_model/code.html">Review Security Model</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-opacity opacity-80 hover:opacity-100" href="../command_reference_docs/code.html">View Command Reference</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-opacity opacity-80 hover:opacity-100" href="../how_it_works_architecture/code.html">Architecture</a>
+</nav>
+<nav class="flex flex-col gap-2">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-opacity opacity-80 hover:opacity-100" href="../command_reference_docs/code.html">API Docs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-opacity opacity-80 hover:opacity-100" href="../security_threat_model/code.html">Audit Logs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary transition-opacity opacity-80 hover:opacity-100" href="../status_roadmap/code.html">Uptime Status</a>
+</nav>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for code blocks
+        document.querySelectorAll('code').forEach(block => {
+            block.addEventListener('click', () => {
+                const text = block.innerText;
+                navigator.clipboard.writeText(text);
+                const original = block.innerHTML;
+                block.innerText = '> COPIED_TO_CLIPBOARD';
+                setTimeout(() => block.innerHTML = original, 1000);
+            });
+        });
+    </script>
+<script>
+        document.querySelectorAll('.reveal-on-scroll').forEach((el, i) => {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => entry.target.classList.add('active'), (i % 5) * 80);
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            io.observe(el);
+        });
+    </script>
+</body></html>
