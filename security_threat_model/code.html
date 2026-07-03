@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Security &amp; Threat Model | Auto-Sweep Bot</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#47dfa4",
+                    "outline-variant": "#3e484f",
+                    "secondary-fixed": "#69fcbe",
+                    "on-surface": "#dee3e8",
+                    "on-primary": "#003549",
+                    "on-tertiary-fixed-variant": "#5c4200",
+                    "primary-container": "#3abff8",
+                    "surface-container-lowest": "#0a0f12",
+                    "surface-container": "#1b2024",
+                    "on-primary-container": "#004b66",
+                    "on-surface-variant": "#bdc8d0",
+                    "on-secondary-fixed-variant": "#005137",
+                    "surface-container-high": "#252b2e",
+                    "surface": "#0f1417",
+                    "on-secondary": "#003825",
+                    "tertiary": "#ffc544",
+                    "error": "#ffb4ab",
+                    "on-tertiary-fixed": "#261900",
+                    "tertiary-fixed": "#ffdea2",
+                    "primary": "#90d7ff",
+                    "surface-tint": "#78d1ff",
+                    "surface-container-highest": "#303539",
+                    "inverse-on-surface": "#2c3135",
+                    "on-background": "#dee3e8",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary": "#402d00",
+                    "on-tertiary-container": "#5a4100",
+                    "on-primary-fixed-variant": "#004c68",
+                    "inverse-primary": "#006689",
+                    "inverse-surface": "#dee3e8",
+                    "surface-variant": "#303539",
+                    "on-secondary-fixed": "#002114",
+                    "on-secondary-container": "#00452e",
+                    "primary-fixed": "#c3e8ff",
+                    "secondary-container": "#00bd85",
+                    "surface-dim": "#0f1417",
+                    "surface-container-low": "#171c20",
+                    "error-container": "#93000a",
+                    "secondary": "#47dfa4",
+                    "background": "#0f1417",
+                    "tertiary-container": "#e4a900",
+                    "primary-fixed-dim": "#78d1ff",
+                    "on-primary-fixed": "#001e2c",
+                    "tertiary-fixed-dim": "#fabc22",
+                    "outline": "#87929a",
+                    "surface-bright": "#343a3e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-sm": "0.5rem",
+                    "container-max": "600px",
+                    "stack-md": "1rem",
+                    "inset-pad": "1.25rem",
+                    "gutter": "1rem",
+                    "stack-lg": "2rem"
+            },
+            "fontFamily": {
+                    "code-block": ["JetBrains Mono"],
+                    "label-caps": ["JetBrains Mono"],
+                    "headline-lg": ["JetBrains Mono"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["JetBrains Mono"],
+                    "headline-md": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "code-block": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-caps": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0f1417;
+            color: #dee3e8;
+            -webkit-font-smoothing: antialiased;
+        }
+        .structural-line {
+            border: 1px solid #1A1C1E;
+        }
+        .monospace-block {
+            background-color: #000000;
+            border-left: 3px solid #3ABFF8;
+            position: relative;
+        }
+        .hash-chain-connector {
+            border-left: 1px dashed #26292E;
+            margin-left: 7px;
+        }
+        .hash-node {
+            width: 14px;
+            height: 14px;
+            background: #141517;
+            border: 1px solid #26292E;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .terminal-glow {
+            box-shadow: 0 0 10px rgba(58, 191, 248, 0.1);
+        }
+        .segment-bar {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+        }
+        .segment {
+            height: 8px;
+            background-color: #1A1C1E;
+        }
+        .segment.active {
+            background-color: #3ABFF8;
+        }
+        .segment.error {
+            background-color: #ffb4ab;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-inset-pad h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-on-surface">Auto-Sweep Bot</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="../how_it_works_architecture/code.html">Architecture</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="../command_reference_docs/code.html">Docs</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-md text-body-md" href="../security_threat_model/code.html">Security</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="../build_log_changelog/code.html">Changelog</a>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-tertiary border border-tertiary px-3 py-1">DEVNET ONLY</span>
+</div>
+</nav>
+<main class="lg:ml-64 pt-24 pb-stack-lg px-4 max-w-container-max mx-auto">
+<!-- Header -->
+<header class="mb-stack-lg">
+<div class="font-label-caps text-label-caps text-primary mb-2 uppercase tracking-widest">Threat Model</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-4">This page assumes you don't trust us yet.</h1>
+<p class="text-on-surface-variant max-w-md">Our security framework is designed for adversarial environments where the user is the primary target and the interface is a shared medium.</p>
+</header>
+<!-- Identity & Access Section -->
+<section class="mb-stack-lg p-inset-pad bg-surface-container border border-outline-variant rounded-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-primary">security</span>
+<h2 class="font-headline-md text-headline-md">Identity &amp; Access Control</h2>
+</div>
+<div class="space-y-stack-md">
+<div class="p-4 bg-surface-container-low border border-outline-variant rounded">
+<div class="font-label-caps text-label-caps text-secondary mb-1">TELEGRAM-ID ALLOWLIST</div>
+<p class="text-body-md mb-2">Non-numeric handle resolution is bypassed. System only responds to immutable 64-bit Telegram IDs.</p>
+<div class="monospace-block p-3 mt-2 rounded">
+<span class="absolute top-1 right-2 font-label-caps text-label-caps opacity-50">UID_MAP</span>
+<code class="text-code-block font-code-block text-primary">ALLOW [540291, 119203, 882731]</code>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="p-4 bg-surface-container-low border border-outline-variant rounded">
+<div class="font-label-caps text-label-caps text-secondary mb-1">ARGON2 HASHING</div>
+<p class="text-body-md">Admin passwords never touch the DB in plaintext. Cost parameters tuned for GPU resistance.</p>
+</div>
+<div class="p-4 bg-surface-container-low border border-outline-variant rounded">
+<div class="font-label-caps text-label-caps text-secondary mb-1">BURN-AFTER-USE TOTP</div>
+<p class="text-body-md">Every fund-altering command requires a unique 2FA code that expires instantly upon first check.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Secret Hygiene -->
+<section class="mb-stack-lg">
+<div class="flex items-center gap-2 mb-stack-md px-inset-pad">
+<span class="material-symbols-outlined text-primary">cleaning_services</span>
+<h2 class="font-headline-md text-headline-md">Secret Hygiene</h2>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-lg overflow-hidden">
+<div class="p-inset-pad border-b border-outline-variant flex justify-between items-center bg-surface-container-high">
+<span class="font-label-caps text-label-caps">GROUP-CHAT LEAK PROTECTION</span>
+<span class="text-secondary font-label-caps text-label-caps flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span> ACTIVE
+                    </span>
+</div>
+<div class="p-inset-pad space-y-4">
+<p class="text-body-md">The bot watches for fund-moving commands (which carry an OTP) typed outside a DM. When one shows up in a group, it deletes the message if it has permission and burns that OTP immediately. No account freeze, no key rotation, just an immediate scrub so the leaked code can't be replayed.</p>
+<div class="monospace-block p-4 rounded text-error-container">
+<code class="text-code-block font-code-block text-error">
+                            [LOG] WARN: fund command with OTP detected in group_id: 8812.<br/>
+                            [ACTION] Deleting message 99201...<br/>
+                            [ACTION] OTP burned. Cannot be reused.
+                        </code>
+</div>
+<div class="flex items-start gap-3 p-3 bg-primary-container/10 border border-primary/20 rounded">
+<span class="material-symbols-outlined text-primary mt-1">info</span>
+<p class="text-body-md text-on-surface">Engineering Principle: <strong class="font-bold">never [mess with] the money</strong>. Execution is restricted to authenticated DM tunnels only.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- The Signer Boundary -->
+<section class="mb-stack-lg p-inset-pad bg-surface-container border border-outline-variant rounded-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<h2 class="font-headline-md text-headline-md">The Signer Boundary</h2>
+</div>
+<div class="relative py-8 flex flex-col items-center gap-8">
+<!-- UI Layer -->
+<div class="w-full max-w-xs p-4 bg-surface-container-high border border-outline-variant rounded-lg text-center relative z-10">
+<div class="font-label-caps text-label-caps mb-2 text-on-surface-variant">TELEGRAM BOT API</div>
+<span class="material-symbols-outlined text-3xl">chat</span>
+<p class="text-label-caps mt-2">Insecure Command Processing</p>
+</div>
+<!-- Boundary -->
+<div class="w-full h-px border-t border-dashed border-error relative">
+<span class="absolute right-0 -top-6 font-label-caps text-label-caps text-error">TRUST BOUNDARY (AIR-GAP SIM)</span>
+</div>
+<!-- Signer Layer -->
+<div class="w-full max-w-xs p-4 bg-black border-2 border-primary rounded-lg text-center relative z-10 terminal-glow">
+<div class="font-label-caps text-label-caps mb-2 text-primary">SECURE KMS SIGNER</div>
+<span class="material-symbols-outlined text-3xl text-primary">key</span>
+<p class="text-label-caps mt-2 text-primary">Keystore Isolation</p>
+</div>
+<!-- Boot Check Visual -->
+<div class="w-full mt-4 p-4 bg-black border border-outline-variant font-code-block text-code-block">
+<div class="flex justify-between mb-2">
+<span>TERMINAL BOOT CHECK</span>
+<span class="text-error">[FAIL]</span>
+</div>
+<div class="segment-bar mb-3">
+<div class="segment active"></div>
+<div class="segment active"></div>
+<div class="segment active"></div>
+<div class="segment active"></div>
+<div class="segment active"></div>
+<div class="segment active"></div>
+<div class="segment error"></div>
+<div class="segment"></div>
+<div class="segment"></div>
+<div class="segment"></div>
+</div>
+<div class="text-error uppercase">
+                        CHECKING SIGNER... [FAIL] NO KMS CONFIGURED.<br/>
+                        MAINNET START ABORTED.
+                    </div>
+</div>
+</div>
+</section>
+<!-- Auditability (Hash-Chained Logs) -->
+<section class="mb-stack-lg">
+<div class="flex items-center gap-2 mb-stack-md px-inset-pad">
+<span class="material-symbols-outlined text-primary">history</span>
+<h2 class="font-headline-md text-headline-md">Auditability</h2>
+</div>
+<div class="p-inset-pad bg-surface-container border border-outline-variant rounded-lg">
+<p class="text-body-md mb-6">Internal events are logged as a hash-chained ledger. Any manual modification of the history breaks the cryptographic link.</p>
+<div class="space-y-0">
+<!-- Log 1 -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="hash-node">
+<span class="material-symbols-outlined text-[10px] text-secondary">check</span>
+</div>
+<div class="hash-chain-connector h-12"></div>
+</div>
+<div class="pb-6">
+<div class="font-label-caps text-label-caps text-on-surface-variant">TX_ID: 992-A | HASH: 0x8a2f...</div>
+<p class="text-body-md text-on-surface">Liquidity withdrawal initiated by UID:540291</p>
+</div>
+</div>
+<!-- Log 2 (Broken) -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="hash-node border-error bg-error-container">
+<span class="material-symbols-outlined text-[10px] text-on-error">link_off</span>
+</div>
+<div class="hash-chain-connector h-12 border-error"></div>
+</div>
+<div class="pb-6">
+<div class="font-label-caps text-label-caps text-error">TX_ID: 993-B | HASH: MISMATCH</div>
+<p class="text-body-md text-error">WARN: PREVIOUS_HASH_INTEGRITY_FAIL. Data tampering suspected.</p>
+</div>
+</div>
+<!-- Log 3 -->
+<div class="flex gap-4">
+<div class="flex flex-col items-center">
+<div class="hash-node border-outline-variant opacity-50"></div>
+</div>
+<div class="pb-6">
+<div class="font-label-caps text-label-caps text-on-surface-variant opacity-50">TX_ID: 994-C | HASH: WAITING</div>
+<p class="text-body-md text-on-surface-variant italic">System halted pending audit clearance.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Swap Safety Gates -->
+<section class="mb-stack-lg p-inset-pad bg-surface-container border border-outline-variant rounded-lg">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-primary">swap_horiz</span>
+<h2 class="font-headline-md text-headline-md">Swap Safety Logic</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="p-4 bg-black border border-primary rounded">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-label-caps text-primary">SLIPPAGE_PROTECTION</span>
+<span class="bg-secondary text-on-secondary text-[10px] px-1 font-bold">GATE_ENABLED</span>
+</div>
+<code class="font-code-block text-code-block text-on-surface-variant block">
+                        if (calc_out &lt; min_out) {<br/>
+                          throw Error("Slippage Exceeded");<br/>
+                        }
+                    </code>
+</div>
+<div class="p-4 bg-black border border-primary rounded">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-label-caps text-primary">PRICE_IMPACT_GUARD</span>
+<span class="bg-secondary text-on-secondary text-[10px] px-1 font-bold">GATE_ENABLED</span>
+</div>
+<code class="font-code-block text-code-block text-on-surface-variant block">
+                        if (pool_depth / trade_size &lt; 100) {<br/>
+                          abort("Excessive Impact: &gt;5%");<br/>
+                        }
+                    </code>
+</div>
+</div>
+</section>
+<!-- What we are not claiming -->
+<section class="mb-stack-lg">
+<h2 class="font-headline-md text-headline-md mb-stack-md px-inset-pad">What we are not claiming</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="p-inset-pad bg-surface-container-low border border-outline-variant rounded-lg">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">IMMUTABILITY</div>
+<p class="text-body-md">The bot is software. Software has bugs. We do not claim 100% bug-free operation.</p>
+</div>
+<div class="p-inset-pad bg-surface-container-low border border-outline-variant rounded-lg">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">TELEGRAM SECURITY</div>
+<p class="text-body-md">We cannot secure your Telegram account. If your session is hijacked, your fund commands can be sent.</p>
+</div>
+<div class="p-inset-pad bg-surface-container-low border border-outline-variant rounded-lg">
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-2">SOLANA UPTIME</div>
+<p class="text-body-md">We cannot bypass chain-level congestion or RPC failures. Orders may fail during peak volatility.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full px-inset-pad py-stack-lg max-w-container-max mx-auto border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-stack-md">
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">Auto-Sweep Bot</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Security Framework</p>
+</div>
+<div class="grid grid-cols-2 md:flex gap-x-8 gap-y-2">
+<a class="font-label-caps text-label-caps text-secondary hover:text-secondary opacity-80 hover:opacity-100 transition-opacity" href="../security_threat_model/code.html">Review Security Model</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-opacity" href="../security_threat_model/code.html">Audit Logs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-opacity" href="../command_reference_docs/code.html">API Docs</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-secondary opacity-80 hover:opacity-100 transition-opacity" href="../status_roadmap/code.html">Uptime Status</a>
+</div>
+</div>
+</footer>
+<!-- SideNavBar (Desktop/Large Screens Only) -->
+<aside class="hidden lg:flex flex-col h-screen sticky top-0 fixed left-0 w-64 bg-surface-container border-r border-outline-variant">
+<div class="p-inset-pad border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">terminal</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-primary leading-tight">Console</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-4">
+<a class="flex items-center gap-3 py-3 px-inset-pad bg-primary-container text-on-primary-container rounded-lg mx-2 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-code-block text-code-block">Security</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-inset-pad text-on-surface-variant hover:bg-surface-variant mx-2 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-code-block text-code-block">Architecture</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-inset-pad text-on-surface-variant hover:bg-surface-variant mx-2 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-code-block text-code-block">Docs</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-inset-pad text-on-surface-variant hover:bg-surface-variant mx-2 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-code-block text-code-block">Changelog</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-inset-pad text-on-surface-variant hover:bg-surface-variant mx-2 transition-colors duration-150" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-code-block text-code-block">FAQ</span>
+</a>
+</nav>
+<div class="p-inset-pad border-t border-outline-variant">
+<div class="p-2 bg-surface-container-low rounded border border-outline-variant">
+<div class="font-label-caps text-label-caps opacity-50 mb-1">NETWORK_STATUS</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-secondary font-code-block text-xs">CONNECTED</span>
+</div>
+</div>
+</div>
+</aside>
+<script>
+        // Simple micro-interaction for the terminal segments
+        const segments = document.querySelectorAll('.segment');
+        setInterval(() => {
+            const errorSegment = document.querySelector('.segment.error');
+            if (errorSegment) {
+                errorSegment.style.opacity = errorSegment.style.opacity === '0.5' ? '1' : '0.5';
+            }
+        }, 800);
+    </script>
+</body></html>
