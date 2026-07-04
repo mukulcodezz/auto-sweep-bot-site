@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Command reference — Auto-Sweep Bot</title>
+<meta name="description" content="Every Auto-Sweep Bot command: read-only checks, admin login, forced sweep, and the split-send syntax — plus the error codes and what each one halts."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+<link rel="stylesheet" href="assets/site.css"/>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="security.html">Security</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="commands.html" class="active">Commands</a>
+    <a href="changelog.html">Changelog</a>
+    <a href="faq.html">FAQ</a>
+    <a href="setup.html">Get&nbsp;started</a>
+  </nav>
+  <div class="nav-right">
+    <span class="devnet-chip"><span class="dot"></span> Devnet only</span>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">[ MENU ]</button>
+  </div>
+</header>
+
+<main class="section" style="padding-top:clamp(2.5rem,6vw,4.5rem);">
+<div class="wrap">
+  <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> Reference / command surface</p>
+  <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">Command reference.</h1>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">Read-only commands work anywhere. Anything that moves funds is DM-only and needs a fresh one-time code. Nothing below works until your numeric ID is on the allowlist.</p>
+
+  <div class="doc" style="margin-top:3.5rem;">
+    <aside class="doc-nav">
+      <a href="#access" class="here">Access &amp; login</a>
+      <a href="#read">Read-only</a>
+      <a href="#funds">Fund-moving</a>
+      <a href="#errors">Error codes</a>
+    </aside>
+
+    <div>
+      <!-- ACCESS -->
+      <section id="access" class="reveal" style="margin-bottom:3.5rem;">
+        <div class="sec-head"><span class="sec-idx">01</span><h2 class="section-title">Access &amp; login</h2></div>
+        <p class="prose" style="margin-bottom:1.4rem;">Access is a fixed allowlist set in config before the bot ever runs. There's no in-bot signup or request-access command — your ID has to be added by whoever operates the bot.</p>
+        <p class="label" style="margin-bottom:0.5rem;">Obtain your numeric ID · separate public bot, not a bot command</p>
+        <div class="cmd" style="margin-bottom:1.4rem;">
+          <button class="copy" data-copy="@userinfobot">COPY</button>
+          <span class="tok">@userinfobot</span><br/>
+          <span class="cmt">// Message this on Telegram. Send the numeric ID it returns — not your @username.</span>
+        </div>
+        <p class="label" style="margin-bottom:0.5rem;">Admin login · DM only</p>
+        <div class="cmd">
+          <button class="copy" data-copy="/login <username> <password>">COPY</button>
+          <span class="sig">$</span> /login &lt;username&gt; &lt;password&gt;<br/>
+          <span class="cmt">// Opens a 30-minute admin session. Password is Argon2-hashed — never stored or logged in plaintext. /logout ends it early.</span>
+        </div>
+      </section>
+
+      <!-- READ ONLY -->
+      <section id="read" class="reveal" style="margin-bottom:3.5rem;">
+        <div class="sec-head"><span class="sec-idx">02</span><h2 class="section-title">Read-only</h2><span class="gate pass">safe in groups</span></div>
+        <p class="prose" style="margin-bottom:1.4rem;">No on-chain state changes. These never move money.</p>
+        <div class="card-grid cols-2">
+          <div class="card">
+            <span class="kicker">Recognition check</span>
+            <div class="cmd" style="border-left-color:var(--verify);"><button class="copy" data-copy="/whoami">COPY</button><span class="sig">$</span> /whoami</div>
+            <p style="margin-top:0.7rem;">Returns your Telegram ID and current session status.</p>
+          </div>
+          <div class="card">
+            <span class="kicker">Wallet status · needs a session</span>
+            <div class="cmd" style="border-left-color:var(--verify);"><button class="copy" data-copy="/status">COPY</button><span class="sig">$</span> /status</div>
+            <p style="margin-top:0.7rem;">Returns the wallet address and live SOL balance. Read-only.</p>
+          </div>
+        </div>
+        <p class="prose" style="margin-top:1rem;font-size:0.9rem;"><code class="mono">/help</code>, <code class="mono">/start</code> and <code class="mono">/whoami</code> work with no login. Typo a command and the bot suggests the closest real one.</p>
+      </section>
+
+      <!-- FUNDS -->
+      <section id="funds" class="reveal" style="margin-bottom:3.5rem;">
+        <div class="sec-head"><span class="sec-idx">03</span><h2 class="section-title">Fund-moving</h2><span class="gate halt">restricted · DM only</span></div>
+        <div class="card" style="border-left:3px solid var(--signal);margin-bottom:1.6rem;">
+          <span class="kicker" style="color:var(--signal)">Strict DM protocol</span>
+          <p>These are ignored in group chats. If a password or OTP is typed into a group by mistake, the bot deletes that message (where it has permission) and burns the OTP immediately so it can't be reused. No account freeze — an immediate scrub.</p>
+        </div>
+
+        <p class="label" style="margin-bottom:0.5rem;">Force an immediate sweep</p>
+        <div class="cmd" style="margin-bottom:1.6rem;">
+          <button class="copy" data-copy="/sweep <otp>">COPY</button>
+          <span class="sig">$</span> /sweep &lt;otp&gt;<br/>
+          <span class="cmt">// Incoming tokens are already swept in the background with no command. This forces an immediate pass over the whole wallet.</span>
+        </div>
+
+        <p class="label" style="margin-bottom:0.5rem;">Split-send syntax</p>
+        <div class="cmd" style="margin-bottom:1.2rem;">
+          <button class="copy" data-copy="/send <otp> send 1 to alice, 2 to bob">COPY</button>
+          <span class="sig">$</span> /send &lt;otp&gt; send [amount] to [alias|address], …<br/><br/>
+          <span class="cmt">// example</span><br/>
+          <span class="sig">$</span> /send 982103 send <span class="tok">1.5</span> to alice, <span class="tok">0.2</span> to bob
+        </div>
+        <ul style="list-style:none;padding:0;margin:0;display:grid;gap:0.9rem;">
+          <li style="display:flex;gap:0.8rem;"><span class="gate line">otp</span><span class="prose" style="font-size:0.95rem;">6-digit authenticator code. Required fresh even mid-session, burned after one use — the same code can never be replayed.</span></li>
+          <li style="display:flex;gap:0.8rem;"><span class="gate line">alias</span><span class="prose" style="font-size:0.95rem;">A name from the admin-maintained contacts file, or a literal wallet address typed directly. The bot never invents a destination from free text.</span></li>
+        </ul>
+      </section>
+
+      <!-- ERRORS -->
+      <section id="errors" class="reveal">
+        <div class="sec-head"><span class="sec-idx">04</span><h2 class="section-title">Error codes</h2></div>
+        <div class="table-wrap">
+          <table class="spec">
+            <thead><tr><th>Code</th><th>Meaning</th><th>Response</th></tr></thead>
+            <tbody>
+              <tr><td class="code">ERR_UNK_CONTACT</td><td>Recipient isn't a known contact or a valid address.</td><td><span class="gate halt">tx rejected</span></td></tr>
+              <tr><td class="code">ERR_OTP_INVALID</td><td>Code doesn't match the current TOTP window, or is missing.</td><td><span class="gate warn">auth fail · retry</span></td></tr>
+              <tr><td class="code">ERR_OTP_REPLAY</td><td>Code was already used once — burned on first use.</td><td><span class="gate warn">auth fail · retry</span></td></tr>
+              <tr><td class="code">ERR_SLIPPAGE</td><td>Swap would exceed the configured slippage ceiling (default 1%).</td><td><span class="gate halt">halt swap</span></td></tr>
+              <tr><td class="code">ERR_IMPACT_H</td><td>Route price impact exceeds the ceiling — rejected before signing.</td><td><span class="gate halt">halt swap</span></td></tr>
+              <tr><td class="code">ERR_SECRET_IN_GROUP</td><td>Password or OTP typed outside a DM.</td><td><span class="gate halt">scrubbed + burned</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html" style="font-size:1.25rem;"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+        <p class="prose" style="margin-top:1rem;font-size:0.9rem;max-width:38ch;">A Solana custody-boundary experiment operated over Telegram. Devnet only until a custody signer is configured.</p>
+      </div>
+      <div><h4>Product</h4><a href="architecture.html">Architecture</a><a href="commands.html">Command reference</a><a href="changelog.html">Changelog</a><a href="roadmap.html">Status &amp; roadmap</a></div>
+      <div><h4>Trust</h4><a href="security.html">Security &amp; threat model</a><a href="faq.html">FAQ</a><a href="setup.html">Get started</a></div>
+    </div>
+    <div class="foot-base"><span>SYSTEM STATUS · OPERATIONAL · SINGLE INSTANCE</span><span>© <span data-year>2026</span> Auto-Sweep Bot · Devnet</span></div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

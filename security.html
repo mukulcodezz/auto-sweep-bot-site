@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Security &amp; threat model — Auto-Sweep Bot</title>
+<meta name="description" content="The controls that gate this Solana bot, what they protect against, and — plainly — what they do not. Numeric-ID allowlist, single-use TOTP, isolated signer, hash-chained audit, price-impact ceiling."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+<link rel="stylesheet" href="assets/site.css"/>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="security.html" class="active">Security</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="commands.html">Commands</a>
+    <a href="changelog.html">Changelog</a>
+    <a href="faq.html">FAQ</a>
+    <a href="setup.html">Get&nbsp;started</a>
+  </nav>
+  <div class="nav-right">
+    <span class="devnet-chip"><span class="dot"></span> Devnet only</span>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">[ MENU ]</button>
+  </div>
+</header>
+
+<main class="section" style="padding-top:clamp(2.5rem,6vw,4.5rem);">
+<div class="wrap">
+  <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> Threat model · controls · honest limits</p>
+  <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">The security model.</h1>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">Five layers gate every fund-moving action. Below the controls, in the same type size, is what they deliberately do <em>not</em> cover.</p>
+
+  <!-- CONTROLS -->
+  <section style="margin-top:3.8rem;">
+    <div class="sec-head reveal"><span class="sec-idx">01 / CONTROLS</span><h2 class="section-title" data-split>What's enforced.</h2></div>
+    <div class="card-grid cols-2 reveal">
+      <div class="card">
+        <span class="kicker">Layer 01 · Identity</span>
+        <h3>Numeric-ID allowlist</h3>
+        <p>Commands run only for pre-registered Telegram user IDs — never @usernames, which can change hands. Set in config before the bot runs; there's no in-bot request-access path.</p>
+      </div>
+      <div class="card">
+        <span class="kicker">Layer 02 · Session</span>
+        <h3>Argon2 password login</h3>
+        <p><code class="mono">/login</code> opens a 30-minute session. The password is Argon2-hashed and compared — never stored or logged in plaintext.</p>
+      </div>
+      <div class="card">
+        <span class="kicker">Layer 03 · Per-action</span>
+        <h3>Single-use TOTP</h3>
+        <p>Every fund-moving command needs a fresh 6-digit code, even mid-session. Burned on first use; replay tracking is global across all admins on the shared secret.</p>
+      </div>
+      <div class="card">
+        <span class="kicker">Layer 04 · Custody</span>
+        <h3>Isolated signer boundary</h3>
+        <p>Chat handling and parsing never touch key material. Signing sits behind one Signer interface — local AES-256-GCM keystore now, KMS/HSM for mainnet.</p>
+      </div>
+      <div class="card">
+        <span class="kicker">Layer 05 · Evidence</span>
+        <h3>Hash-chained audit log</h3>
+        <p>Every attempt, allowed or denied, is appended with a hash folding in the prior entry. Tampering with any past line breaks verification for all lines after it.</p>
+      </div>
+      <div class="card">
+        <span class="kicker">Layer 05 · Routing</span>
+        <h3>Price-impact ceiling</h3>
+        <p>On top of Jupiter's slippage enforcement, a route with too much up-front price impact is rejected before it's ever signed — even if it's within slippage tolerance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXTRA GUARDS -->
+  <section style="margin-top:1.4rem;">
+    <div class="card reveal" style="border-left:3px solid var(--signal);">
+      <span class="kicker" style="color:var(--signal)">Group-chat leak scrubbing</span>
+      <p class="prose">If <code class="mono">/login</code> or an OTP-bearing command is typed into a group by mistake, the bot deletes the message (where it has permission) and burns any OTP in it immediately — rather than refusing to act and leaving the secret sitting in the transcript.</p>
+    </div>
+  </section>
+
+  <!-- WHAT IT DOESN'T -->
+  <section style="margin-top:3.8rem;">
+    <div class="sec-head reveal"><span class="sec-idx">02 / LIMITS</span><h2 class="section-title" data-split>What it doesn't protect against.</h2></div>
+    <div class="table-wrap reveal">
+      <table class="spec">
+        <thead><tr><th>Scenario</th><th>Reality</th><th>What limits it</th></tr></thead>
+        <tbody>
+          <tr><td class="code">Live session hijack</td><td>A compromised, logged-in session holding a live OTP can authorize one fund-moving command.</td><td>Fresh OTP per action; burned on use — a captured code can't be replayed.</td></tr>
+          <tr><td class="code">Host filesystem access</td><td>Someone with direct disk access can read/rewrite files.</td><td>Audit chain makes tampering <em>detectable</em>, not impossible. Keystore is encrypted at rest.</td></tr>
+          <tr><td class="code">Telegram account takeover</td><td>This is custody software, not account-security software.</td><td>Rotate password + OTP secret immediately if your account is compromised.</td></tr>
+          <tr><td class="code">Mainnet with local key</td><td>Not allowed. Local keystore is devnet/testnet only.</td><td>Config loader hard-refuses to start against <code class="mono">mainnet-beta</code> without a custody signer.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose reveal" style="margin-top:1.2rem;font-size:0.95rem;">An internal security review and an independent test pass have both run at this stage. Both found and fixed real issues. Independent third-party audit before mainnet remains pending.</p>
+  </section>
+
+  <div class="reveal" style="margin-top:3rem;display:flex;gap:0.8rem;flex-wrap:wrap;">
+    <a class="btn" href="architecture.html">See the data flow <span class="arrow">→</span></a>
+    <a class="btn ghost" href="faq.html">Read the skeptic's FAQ</a>
+  </div>
+</div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html" style="font-size:1.25rem;"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+        <p class="prose" style="margin-top:1rem;font-size:0.9rem;max-width:38ch;">A Solana custody-boundary experiment operated over Telegram. Devnet only until a custody signer is configured.</p>
+      </div>
+      <div><h4>Product</h4><a href="architecture.html">Architecture</a><a href="commands.html">Command reference</a><a href="changelog.html">Changelog</a><a href="roadmap.html">Status &amp; roadmap</a></div>
+      <div><h4>Trust</h4><a href="security.html">Security &amp; threat model</a><a href="faq.html">FAQ</a><a href="setup.html">Get started</a></div>
+    </div>
+    <div class="foot-base"><span>SYSTEM STATUS · OPERATIONAL · SINGLE INSTANCE</span><span>© <span data-year>2026</span> Auto-Sweep Bot · Devnet</span></div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

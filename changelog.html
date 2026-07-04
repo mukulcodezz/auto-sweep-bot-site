@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Changelog — Auto-Sweep Bot</title>
+<meta name="description" content="The build log: auth and key vault, auto-sweep, the atomic splitter, and a security-review pass — all shipped, devnet-only."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+<link rel="stylesheet" href="assets/site.css"/>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="security.html">Security</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="commands.html">Commands</a>
+    <a href="changelog.html" class="active">Changelog</a>
+    <a href="faq.html">FAQ</a>
+    <a href="setup.html">Get&nbsp;started</a>
+  </nav>
+  <div class="nav-right">
+    <span class="devnet-chip"><span class="dot"></span> Devnet only</span>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">[ MENU ]</button>
+  </div>
+</header>
+
+<main class="section" style="padding-top:clamp(2.5rem,6vw,4.5rem);">
+<div class="wrap">
+  <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> Build log · newest first</p>
+  <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">Changelog.</h1>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">Five phases shipped. Everything below runs on devnet; mainnet is gated on a custody signer.</p>
+
+  <div style="margin-top:3.5rem;border-left:2px solid var(--line-2);padding-left:0;">
+    <!-- entry -->
+    <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <span class="gate pass">phase 05 · shipped</span><span class="label">Security review</span>
+      </div>
+      <h3>Security review &amp; hardening pass</h3>
+      <p class="prose" style="margin-top:0.5rem;">Internal review plus an independent test pass. Both found and fixed real issues: OTP replay tightened to global burn across admins, group-chat secret scrubbing added, price-impact ceiling layered on top of Jupiter slippage, mainnet start-up guard made a hard refusal.</p>
+    </article>
+    <!-- entry -->
+    <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <span class="gate pass">phase 04 · shipped</span><span class="label">Audit ledger</span>
+      </div>
+      <h3>Hash-chained audit log</h3>
+      <p class="prose" style="margin-top:0.5rem;">Every command attempt — allowed or denied — appends to <code class="mono">data/audit.jsonl</code>, each entry's hash folding in the previous one. <code class="mono">verifyAuditChain()</code> re-walks the chain to detect any edit.</p>
+    </article>
+    <!-- entry -->
+    <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <span class="gate pass">phase 03 · shipped</span><span class="label">Splitter</span>
+      </div>
+      <h3>Atomic multi-recipient splitter</h3>
+      <p class="prose" style="margin-top:0.5rem;"><code class="mono">/send</code> pays multiple recipients in one atomic transaction. Destinations resolve only to a fixed contacts file or a literal address — never a name invented from free text. Optional Groq parsing for looser phrasing, deterministic regex otherwise.</p>
+    </article>
+    <!-- entry -->
+    <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <span class="gate pass">phase 02 · shipped</span><span class="label">Auto-sweep</span>
+      </div>
+      <h3>Background auto-sweep</h3>
+      <p class="prose" style="margin-top:0.5rem;">Token watcher detects incoming SPL across child accounts and swaps to SOL through Jupiter automatically — no command needed. <code class="mono">/sweep</code> forces an immediate full pass.</p>
+    </article>
+    <!-- entry -->
+    <article class="reveal" style="position:relative;padding:0 0 0.6rem 2rem;">
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <span class="gate pass">phase 01 · shipped</span><span class="label">Foundation</span>
+      </div>
+      <h3>Auth &amp; key vault</h3>
+      <p class="prose" style="margin-top:0.5rem;">Numeric-ID allowlist, Argon2 password login, single-use TOTP, and the swappable Signer interface with a local AES-256-GCM encrypted keystore.</p>
+    </article>
+  </div>
+
+  <div class="reveal" style="margin-top:3rem;"><a class="btn ghost" href="roadmap.html">What's next → status &amp; roadmap <span class="arrow">→</span></a></div>
+</div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html" style="font-size:1.25rem;"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+        <p class="prose" style="margin-top:1rem;font-size:0.9rem;max-width:38ch;">A Solana custody-boundary experiment operated over Telegram. Devnet only until a custody signer is configured.</p>
+      </div>
+      <div><h4>Product</h4><a href="architecture.html">Architecture</a><a href="commands.html">Command reference</a><a href="changelog.html">Changelog</a><a href="roadmap.html">Status &amp; roadmap</a></div>
+      <div><h4>Trust</h4><a href="security.html">Security &amp; threat model</a><a href="faq.html">FAQ</a><a href="setup.html">Get started</a></div>
+    </div>
+    <div class="foot-base"><span>SYSTEM STATUS · OPERATIONAL · SINGLE INSTANCE</span><span>© <span data-year>2026</span> Auto-Sweep Bot · Devnet</span></div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

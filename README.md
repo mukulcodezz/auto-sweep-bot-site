@@ -1,18 +1,30 @@
-# Auto-Sweep Bot — Marketing Site
+# Auto-Sweep Bot — marketing site
 
-Static multi-page site for the Auto-Sweep Bot: what it does, how it works, and its security model. Generated with Google Stitch, then passed through content-accuracy, UI/UX, motion, and copy-discipline review.
+Static multi-page site for the Auto-Sweep Bot: what it does, how it's wired, and its
+security model. Hand-built "Vault Ledger" design system — a light, editorial
+engineering-dossier look (Fraunces + Archivo + Spline Sans Mono, international-orange
+signal accent, interactive blueprint background). No build step, no framework, no CDN
+beyond Google Fonts.
 
 ## Pages
 
-- `auto_sweep_bot_home/` — Home
-- `security_threat_model/` — Security & Threat Model
-- `how_it_works_architecture/` — How It Works (Architecture)
-- `command_reference_docs/` — Command Reference / Docs
-- `build_log_changelog/` — Build Log / Changelog
-- `status_roadmap/` — Status & Roadmap
-- `skeptical_faq/` — FAQ
-- `setup_guide/` — Get Started / Setup
+Flat clean URLs at the site root:
 
-`*_with_motion/` variants are scroll-animated versions of the same page. `structural_security_logic/DESIGN.md` is the design system spec.
+- `index.html` — Home
+- `security.html` — Security & threat model
+- `architecture.html` — How it's wired (data flow + module map)
+- `commands.html` — Command reference
+- `changelog.html` — Build log
+- `roadmap.html` — Status & roadmap
+- `faq.html` — Skeptic's FAQ
+- `setup.html` — Get started
 
-Static HTML, no build step. `index.html` at the root redirects to the home page.
+## Assets
+
+- `assets/site.css` — the full design system (tokens, components, motion).
+- `assets/app.js` — vanilla interaction layer: cursor-tracked blueprint crosshair,
+  scroll reveals, split-line headings, count-up stats, copy buttons, the self-playing
+  Telegram transcript, and draw-on-scroll SVG. All motion respects
+  `prefers-reduced-motion` and disables the crosshair on touch/coarse pointers.
+
+Deploy is static — serve the folder as-is. `index.html` is the real home page.

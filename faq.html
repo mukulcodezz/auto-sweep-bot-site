@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FAQ — Auto-Sweep Bot</title>
+<meta name="description" content="Straight answers on key custody, a compromised Telegram account, why Telegram at all, mainnet status, and how the tamper-evident audit log actually works."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+<link rel="stylesheet" href="assets/site.css"/>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="index.html"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="security.html">Security</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="commands.html">Commands</a>
+    <a href="changelog.html">Changelog</a>
+    <a href="faq.html" class="active">FAQ</a>
+    <a href="setup.html">Get&nbsp;started</a>
+  </nav>
+  <div class="nav-right">
+    <span class="devnet-chip"><span class="dot"></span> Devnet only</span>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links">[ MENU ]</button>
+  </div>
+</header>
+
+<main class="section" style="padding-top:clamp(2.5rem,6vw,4.5rem);">
+<div class="wrap">
+  <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> Straight answers, including the uncomfortable ones</p>
+  <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">Questions a skeptic asks.</h1>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">This is wallet-custody software. The honest failure modes are here, not buried.</p>
+
+  <div style="display:grid;gap:1px;background:var(--line-2);border:1px solid var(--line-2);margin-top:3.5rem;">
+    <!-- Q1 -->
+    <article class="card reveal" style="border:0;padding:1.8rem;">
+      <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
+        <h3>Who controls the private key?</h3><span class="gate line">auth · 01</span>
+      </div>
+      <p class="prose">Command-parsing and Telegram-handling code never touch the key directly. It lives behind an isolated Signer module. Today that's a local AES-256-GCM encrypted keystore (devnet/testnet); the same interface is built to swap in a real KMS/HSM custody backend, and the config loader hard-refuses to start against mainnet until that swap happens.</p>
+      <a class="btn ghost" href="security.html" style="margin-top:1.1rem;">View security model <span class="arrow">→</span></a>
+    </article>
+    <!-- Q2 -->
+    <article class="card reveal" style="border:0;padding:1.8rem;">
+      <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
+        <h3>What if my Telegram is compromised?</h3><span class="gate halt">risk · 02</span>
+      </div>
+      <p class="prose">Straight answer: a compromised, already-logged-in session with a live OTP code can still authorize a fund-moving command. This is custody software, not a Telegram-account-security product. What limits the damage — every fund-moving command needs a fresh OTP even mid-session, and that code is burned after one use, so a captured code can't be replayed. If your Telegram is compromised, treat your admin password and OTP secret as compromised too and rotate them immediately.</p>
+    </article>
+    <!-- Q3 -->
+    <article class="card reveal" style="border:0;padding:1.8rem;">
+      <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
+        <h3>Why Telegram at all?</h3><span class="gate line">platform · 03</span>
+      </div>
+      <p class="prose">It's the interface most admins already have installed, and works equally well in a DM or a group. It's not the security boundary, though — access is gated by a separate Telegram-ID allowlist, password, and OTP layer regardless of which chat app is in front of it.</p>
+    </article>
+    <!-- Q4 -->
+    <article class="card reveal" style="border:0;padding:1.8rem;">
+      <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
+        <h3>Is this on mainnet?</h3><span class="gate warn">net · 04</span>
+      </div>
+      <p class="prose">No — devnet only, enforced in code, not just policy: the config loader refuses to start against <code class="mono" style="color:var(--signal)">mainnet-beta</code> unless a real KMS/custody signer replaces the local keystore. An internal security review plus an independent test pass already ran at this stage; both found and fixed real issues before this page existed.</p>
+      <div style="display:flex;gap:0.6rem;margin-top:1.1rem;flex-wrap:wrap;"><span class="gate line">status · devnet only</span><span class="gate line">audit · internal pass done</span></div>
+    </article>
+    <!-- Q5 -->
+    <article class="card reveal" style="border:0;padding:1.8rem;">
+      <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
+        <h3>How tamper-proof is the log, really?</h3><span class="gate line">log · 05</span>
+      </div>
+      <p class="prose" style="margin-bottom:1.1rem;">Every command attempt (allowed or denied) is written to a local append-only log where each entry's hash includes the previous entry's hash. Editing or deleting a past line breaks the chain for everything after it, and that break is detectable by re-verifying. It runs on the same machine as the bot, not a decentralized store — it makes tampering <strong>detectable</strong>, not physically impossible for someone with direct filesystem access.</p>
+      <div class="cmd">
+        <button class="copy" data-copy='{"ts":"2026-07-03T14:02:11Z","telegramId":"540291","command":"send","success":true,"prevHash":"a3f1...","hash":"8c92..."}'>COPY</button>
+        <span class="cmt">{</span> "ts": "2026-07-03T14:02:11Z",<br/>
+        &nbsp;&nbsp;"telegramId": "540291",<br/>
+        &nbsp;&nbsp;"command": "send", "success": <span class="tok">true</span>,<br/>
+        &nbsp;&nbsp;"prevHash": "a3f1…", "hash": "8c92…" <span class="cmt">}</span>
+      </div>
+    </article>
+  </div>
+</div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html" style="font-size:1.25rem;"><span class="glyph" aria-hidden="true"></span> Auto-Sweep&nbsp;Bot</a>
+        <p class="prose" style="margin-top:1rem;font-size:0.9rem;max-width:38ch;">A Solana custody-boundary experiment operated over Telegram. Devnet only until a custody signer is configured.</p>
+      </div>
+      <div><h4>Product</h4><a href="architecture.html">Architecture</a><a href="commands.html">Command reference</a><a href="changelog.html">Changelog</a><a href="roadmap.html">Status &amp; roadmap</a></div>
+      <div><h4>Trust</h4><a href="security.html">Security &amp; threat model</a><a href="faq.html">FAQ</a><a href="setup.html">Get started</a></div>
+    </div>
+    <div class="foot-base"><span>SYSTEM STATUS · OPERATIONAL · SINGLE INSTANCE</span><span>© <span data-year>2026</span> Auto-Sweep Bot · Devnet</span></div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
