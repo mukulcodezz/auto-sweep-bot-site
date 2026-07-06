@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Get started — Auto-Sweep Bot</title>
-<meta name="description" content="Set the bot up against a devnet wallet in about ten minutes: BotFather token, numeric ID allowlist, Argon2 password hash, TOTP secret, encrypted keystore, optional contacts."/>
+<meta name="description" content="Set the bot up against a devnet wallet in about ten minutes: BotFather token, group chat ID, numeric-ID allowlist, an encrypted local keystore, and optional cold-forward. Devnet only."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
@@ -31,9 +31,9 @@
 
 <main class="section" style="padding-top:clamp(2.5rem,6vw,4.5rem);">
 <div class="wrap">
-  <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> ~10 minutes · one authenticator app · a faucet, not real money</p>
+  <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> ~10 minutes · a Telegram bot token · a faucet, not real money</p>
   <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">Get started.</h1>
-  <p class="lead reveal d1" style="margin-top:1.6rem;">Node, an authenticator app, and a devnet faucet. The bot prints a public key at the end — you fund <em>that</em> from a faucet.</p>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">Node, a Telegram bot, and a devnet faucet. The bot prints a public key at the end — you fund <em>that</em> from a faucet.</p>
 
   <div class="reveal d2" style="margin-top:2rem;">
     <p class="label" style="margin-bottom:0.5rem;">Install</p>
@@ -54,43 +54,26 @@
     <div class="card reveal" style="display:grid;grid-template-columns:auto 1fr;gap:1.3rem;align-items:start;">
       <span class="stat" style="font-size:2rem;line-height:1;color:var(--signal);">02</span>
       <div>
-        <h3>Bot token &amp; allowlist</h3>
-        <p class="prose" style="margin:0.4rem 0 0.9rem;"><code class="mono">TELEGRAM_BOT_TOKEN</code> from <span class="mono" style="color:var(--signal)">@BotFather</span>. <code class="mono">ALLOWLIST_TELEGRAM_IDS</code> = your numeric ID from <span class="mono" style="color:var(--signal)">@userinfobot</span>, comma-separated for multiple admins. This is the hard access gate — nothing works without it. <code class="mono">ADMIN_USERNAME</code> — pick anything; it's checked with the password at <code class="mono">/login</code>.</p>
+        <h3>Bot token, group chat &amp; allowlist</h3>
+        <p class="prose" style="margin:0.4rem 0 0.9rem;"><code class="mono">TELEGRAM_BOT_TOKEN</code> from <span class="mono" style="color:var(--signal)">@BotFather</span>. <code class="mono">TELEGRAM_GROUP_CHAT_ID</code> = your 2-person group's ID (a negative number from <span class="mono" style="color:var(--signal)">@getidsbot</span>). <code class="mono">ALLOWLIST_TELEGRAM_IDS</code> = your and your partner's numeric IDs from <span class="mono" style="color:var(--signal)">@userinfobot</span>, comma-separated. This is the hard access gate — nothing works without it.</p>
       </div>
     </div>
     <!-- step -->
     <div class="card reveal" style="display:grid;grid-template-columns:auto 1fr;gap:1.3rem;align-items:start;">
       <span class="stat" style="font-size:2rem;line-height:1;color:var(--signal);">03</span>
       <div>
-        <h3>Hash your password</h3>
-        <p class="prose" style="margin:0.4rem 0 0.9rem;">Paste the output into <code class="mono">ADMIN_PASSWORD_HASH</code>. The plaintext is never stored.</p>
-        <div class="cmd"><button class="copy" data-copy='npx tsx scripts/hash-password.ts "your-password"'>COPY</button><span class="sig">$</span> npx tsx scripts/hash-password.ts <span class="tok">"your-password"</span></div>
-      </div>
-    </div>
-    <!-- step -->
-    <div class="card reveal" style="display:grid;grid-template-columns:auto 1fr;gap:1.3rem;align-items:start;">
-      <span class="stat" style="font-size:2rem;line-height:1;color:var(--signal);">04</span>
-      <div>
-        <h3>Generate a TOTP secret</h3>
-        <p class="prose" style="margin:0.4rem 0 0.9rem;">Paste into <code class="mono">ADMIN_TOTP_SECRET</code> and add it to an authenticator app. Fund-moving commands ask for the 6-digit code fresh, every time, even mid-session — burned on use.</p>
-        <div class="cmd"><button class="copy" data-copy="npx tsx scripts/gen-totp-secret.ts">COPY</button><span class="sig">$</span> npx tsx scripts/gen-totp-secret.ts</div>
-      </div>
-    </div>
-    <!-- step -->
-    <div class="card reveal" style="display:grid;grid-template-columns:auto 1fr;gap:1.3rem;align-items:start;">
-      <span class="stat" style="font-size:2rem;line-height:1;color:var(--signal);">05</span>
-      <div>
         <h3>Create the wallet</h3>
-        <p class="prose" style="margin:0.4rem 0 0.9rem;">Leave <code class="mono">SIGNER_TYPE=local</code>, set <code class="mono">KEYSTORE_PASSWORD</code> (8+ chars), then generate. It prints a public key — fund it from a <strong style="color:var(--signal)">devnet</strong> faucet.</p>
+        <p class="prose" style="margin:0.4rem 0 0.9rem;">Leave <code class="mono">SIGNER_TYPE=local</code>, set <code class="mono">KEYSTORE_PASSWORD</code> (8+ chars), then generate. It prints a public key — fund it from a <strong style="color:var(--signal)">devnet</strong> faucet, never real money.</p>
         <div class="cmd"><button class="copy" data-copy="npx tsx scripts/init-keystore.ts">COPY</button><span class="sig">$</span> npx tsx scripts/init-keystore.ts</div>
+        <p class="prose" style="margin:0.7rem 0 0;font-size:0.85rem;">Already have a key? <code class="mono">scripts/import-keystore.ts</code> imports it; <code class="mono">scripts/export-keystore.ts</code> exports for Phantom.</p>
       </div>
     </div>
     <!-- step -->
     <div class="card reveal" style="display:grid;grid-template-columns:auto 1fr;gap:1.3rem;align-items:start;">
-      <span class="stat" style="font-size:2rem;line-height:1;color:var(--ink-3);">06</span>
+      <span class="stat" style="font-size:2rem;line-height:1;color:var(--ink-3);">04</span>
       <div>
-        <h3>Optional — contacts &amp; looser parsing</h3>
-        <p class="prose" style="margin:0.4rem 0 0.9rem;">Copy <code class="mono">data/contacts.example.json</code> to <code class="mono">data/contacts.json</code> for <code class="mono">/send</code> aliases — it can only pay names listed here or a literal address, never one invented from free text. Set <code class="mono">GROQ_API_KEY</code> to parse looser phrasing; without it a deterministic regex handles <span class="mono">"&lt;amount&gt; to &lt;name&gt;"</span>.</p>
+        <h3>Optional — cold-forward &amp; tuning</h3>
+        <p class="prose" style="margin:0.4rem 0 0.9rem;">Set <code class="mono">WITHDRAW_ADDRESS</code> to auto-forward swept SOL above <code class="mono">HOT_WALLET_BUFFER_LAMPORTS</code> to a cold wallet. Tune <code class="mono">SWEEP_SLIPPAGE_BPS</code>, and set <code class="mono">AUTOSWEEP_ENABLED</code> to start with sweeping on. A dedicated <code class="mono">SOLANA_RPC_URL</code> + <code class="mono">SOLANA_WS_URL</code> gives reliable 24/7 websocket watching.</p>
       </div>
     </div>
   </div>
@@ -98,7 +81,7 @@
   <div class="reveal" style="margin-top:3rem;border:1px solid var(--line-2);background:var(--ink);color:#F1E9D8;padding:2rem;">
     <p class="label" style="color:#c9bfa8;margin-bottom:0.8rem;">Run it</p>
     <div class="cmd" style="background:#000;margin-bottom:1rem;"><button class="copy" data-copy="npm run dev">COPY</button><span class="sig">$</span> npm run dev</div>
-    <p class="mono" style="font-size:0.9rem;color:#c9bfa8;">In Telegram, DM the bot <span style="color:#8FCFB0">/help</span>. Then <span style="color:#8FCFB0">/login</span>, <span style="color:#8FCFB0">/status</span>, and send a token to the wallet to watch it sweep.</p>
+    <p class="mono" style="font-size:0.9rem;color:#c9bfa8;">In your group chat, send <span style="color:#8FCFB0">/start</span> to confirm you're allowlisted, then <span style="color:#8FCFB0">/autosweep on</span>, and send a token to the wallet to watch it sweep. For a VPS, <span style="color:#8FCFB0">npm run start:prod</span> builds and runs it under PM2.</p>
   </div>
   <p class="prose reveal" style="margin-top:1.4rem;font-size:0.9rem;">Full command list on the <a href="commands.html" style="color:var(--signal);border-bottom:1px solid var(--signal);">command reference</a>. The mainnet guard is not optional — the bot won't start against <code class="mono">mainnet-beta</code> with a local keystore.</p>
 </div>

@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Changelog — Auto-Sweep Bot</title>
-<meta name="description" content="The build log: auth and key vault, auto-sweep, the atomic splitter, and a security-review pass — all shipped, devnet-only."/>
+<meta name="description" content="The build log: auth and key vault, best-rate auto-sweep, and cold-forward with a hash-chained audit log — shipped, devnet-only. The atomic splitter, login, and TOTP are planned."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
@@ -33,23 +33,32 @@
 <div class="wrap">
   <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> Build log · newest first</p>
   <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">Changelog.</h1>
-  <p class="lead reveal d1" style="margin-top:1.6rem;">Five phases shipped. Everything below runs on devnet; mainnet is gated on a custody signer.</p>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">Three phases shipped and hardened for 24/7. Everything below runs on devnet; the splitter and TOTP are planned, and mainnet is gated on a custody signer.</p>
 
   <div style="margin-top:3.5rem;border-left:2px solid var(--line-2);padding-left:0;">
-    <!-- entry -->
+    <!-- planned -->
     <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
-      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--signal);"></span>
       <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
-        <span class="gate pass">phase 05 · shipped</span><span class="label">Security review</span>
+        <span class="gate warn">planned · not shipped</span><span class="label">Splitter &amp; auth</span>
       </div>
-      <h3>Security review &amp; hardening pass</h3>
-      <p class="prose" style="margin-top:0.5rem;">Internal review plus an independent test pass. Both found and fixed real issues: OTP replay tightened to global burn across admins, group-chat secret scrubbing added, price-impact ceiling layered on top of Jupiter slippage, mainnet start-up guard made a hard refusal.</p>
+      <h3>Atomic splitter, login &amp; TOTP</h3>
+      <p class="prose" style="margin-top:0.5rem;">Designed, not yet in the running bot: <code class="mono">/send</code> paying multiple recipients in one atomic transaction against a contacts file, <code class="mono">/login</code> with an Argon2 password, a burn-on-use TOTP for fund-moving commands, and group-chat secret scrubbing.</p>
     </article>
     <!-- entry -->
     <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
       <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
       <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
-        <span class="gate pass">phase 04 · shipped</span><span class="label">Audit ledger</span>
+        <span class="gate pass">phase 03 · shipped</span><span class="label">Hardening</span>
+      </div>
+      <h3>Cold-forward, rent reclaim &amp; 24/7 runtime</h3>
+      <p class="prose" style="margin-top:0.5rem;">Swept SOL above a hot-wallet buffer forwards to a cold <code class="mono">WITHDRAW_ADDRESS</code>; emptied token accounts are closed and their rent reclaimed. Websocket watchers with a polling backup, a heartbeat, and graceful shutdown keep it running unattended. The config loader hard-refuses <code class="mono">mainnet-beta</code> with a local key.</p>
+    </article>
+    <!-- entry -->
+    <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
+      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
+      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <span class="gate pass">phase 03 · shipped</span><span class="label">Audit ledger</span>
       </div>
       <h3>Hash-chained audit log</h3>
       <p class="prose" style="margin-top:0.5rem;">Every command attempt — allowed or denied — appends to <code class="mono">data/audit.jsonl</code>, each entry's hash folding in the previous one. <code class="mono">verifyAuditChain()</code> re-walks the chain to detect any edit.</p>
@@ -58,19 +67,10 @@
     <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
       <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
       <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
-        <span class="gate pass">phase 03 · shipped</span><span class="label">Splitter</span>
-      </div>
-      <h3>Atomic multi-recipient splitter</h3>
-      <p class="prose" style="margin-top:0.5rem;"><code class="mono">/send</code> pays multiple recipients in one atomic transaction. Destinations resolve only to a fixed contacts file or a literal address — never a name invented from free text. Optional Groq parsing for looser phrasing, deterministic regex otherwise.</p>
-    </article>
-    <!-- entry -->
-    <article class="reveal" style="position:relative;padding:0 0 2.6rem 2rem;">
-      <span style="position:absolute;left:-7px;top:6px;width:12px;height:12px;background:var(--verify);"></span>
-      <div style="display:flex;gap:0.8rem;align-items:baseline;flex-wrap:wrap;margin-bottom:0.5rem;">
         <span class="gate pass">phase 02 · shipped</span><span class="label">Auto-sweep</span>
       </div>
-      <h3>Background auto-sweep</h3>
-      <p class="prose" style="margin-top:0.5rem;">Token watcher detects incoming SPL across child accounts and swaps to SOL through Jupiter automatically — no command needed. <code class="mono">/sweep</code> forces an immediate full pass.</p>
+      <h3>Background auto-sweep with best-rate routing</h3>
+      <p class="prose" style="margin-top:0.5rem;">SOL and token watchers detect incoming deposits across child accounts and announce them; non-SOL tokens swap to SOL through Jupiter — Raydium as fallback — automatically when <code class="mono">/autosweep</code> is ON, under slippage and min-output gates. No command needed.</p>
     </article>
     <!-- entry -->
     <article class="reveal" style="position:relative;padding:0 0 0.6rem 2rem;">
@@ -79,7 +79,7 @@
         <span class="gate pass">phase 01 · shipped</span><span class="label">Foundation</span>
       </div>
       <h3>Auth &amp; key vault</h3>
-      <p class="prose" style="margin-top:0.5rem;">Numeric-ID allowlist, Argon2 password login, single-use TOTP, and the swappable Signer interface with a local AES-256-GCM encrypted keystore.</p>
+      <p class="prose" style="margin-top:0.5rem;">Numeric-ID (and username) allowlist as the hard access gate, and the swappable Signer interface with a local AES-256-GCM encrypted keystore. Commands: <code class="mono">/start</code>, <code class="mono">/whoami</code>, <code class="mono">/help</code>, <code class="mono">/autosweep</code>.</p>
     </article>
   </div>
 

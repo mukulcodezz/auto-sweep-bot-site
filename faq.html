@@ -49,14 +49,14 @@
       <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
         <h3>What if my Telegram is compromised?</h3><span class="gate halt">risk · 02</span>
       </div>
-      <p class="prose">Straight answer: a compromised, already-logged-in session with a live OTP code can still authorize a fund-moving command. This is custody software, not a Telegram-account-security product. What limits the damage — every fund-moving command needs a fresh OTP even mid-session, and that code is burned after one use, so a captured code can't be replayed. If your Telegram is compromised, treat your admin password and OTP secret as compromised too and rotate them immediately.</p>
+      <p class="prose">Straight answer: today access is the numeric-ID allowlist alone — there's no second factor yet. But no command in this build signs a transfer. The only thing that moves funds is the automatic sweep + cold-forward, and those go to preconfigured destinations, not chat-chosen ones — a compromised allowlisted account can't redirect them by typing. If your Telegram is compromised, tell the operator to drop your ID from the allowlist. A burn-on-use TOTP and an Argon2 login are the planned second factor for when the splitter lands.</p>
     </article>
     <!-- Q3 -->
     <article class="card reveal" style="border:0;padding:1.8rem;">
       <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline;margin-bottom:0.8rem;">
         <h3>Why Telegram at all?</h3><span class="gate line">platform · 03</span>
       </div>
-      <p class="prose">It's the interface most admins already have installed, and works equally well in a DM or a group. It's not the security boundary, though — access is gated by a separate Telegram-ID allowlist, password, and OTP layer regardless of which chat app is in front of it.</p>
+      <p class="prose">It's the interface most admins already have installed, and works equally well in a DM or a group. It's not the security boundary, though — access is gated by a separate numeric Telegram-ID allowlist regardless of which chat app is in front of it. A password and OTP layer are planned on top of that gate.</p>
     </article>
     <!-- Q4 -->
     <article class="card reveal" style="border:0;padding:1.8rem;">
@@ -73,10 +73,10 @@
       </div>
       <p class="prose" style="margin-bottom:1.1rem;">Every command attempt (allowed or denied) is written to a local append-only log where each entry's hash includes the previous entry's hash. Editing or deleting a past line breaks the chain for everything after it, and that break is detectable by re-verifying. It runs on the same machine as the bot, not a decentralized store — it makes tampering <strong>detectable</strong>, not physically impossible for someone with direct filesystem access.</p>
       <div class="cmd">
-        <button class="copy" data-copy='{"ts":"2026-07-03T14:02:11Z","telegramId":"540291","command":"send","success":true,"prevHash":"a3f1...","hash":"8c92..."}'>COPY</button>
+        <button class="copy" data-copy='{"ts":"2026-07-03T14:02:11Z","telegramId":"540291","command":"autosweep(on)","success":true,"prevHash":"a3f1...","hash":"8c92..."}'>COPY</button>
         <span class="cmt">{</span> "ts": "2026-07-03T14:02:11Z",<br/>
         &nbsp;&nbsp;"telegramId": "540291",<br/>
-        &nbsp;&nbsp;"command": "send", "success": <span class="tok">true</span>,<br/>
+        &nbsp;&nbsp;"command": "autosweep(on)", "success": <span class="tok">true</span>,<br/>
         &nbsp;&nbsp;"prevHash": "a3f1…", "hash": "8c92…" <span class="cmt">}</span>
       </div>
     </article>

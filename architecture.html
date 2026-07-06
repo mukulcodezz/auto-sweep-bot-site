@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Architecture — Auto-Sweep Bot</title>
-<meta name="description" content="How the bot is wired: the Telegram layer, the auth gate, the token watcher, the Jupiter swap path, the atomic splitter, and the isolated signer that the chat layer never reaches."/>
+<meta name="description" content="How the bot is wired: the Telegram layer, the allowlist gate, the SOL and token watchers, the Jupiter/Raydium swap path, cold-forward, and the isolated signer the chat layer never reaches. The atomic splitter is planned."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
@@ -52,10 +52,10 @@
       </g>
       <g fill="#17130C" font-size="12" text-anchor="middle">
         <text x="85"  y="146">Telegram</text><text x="85"  y="162" fill="#8A7F69" font-size="10">message in</text>
-        <text x="275" y="146">Auth gate</text><text x="275" y="162" fill="#8A7F69" font-size="10">ID · pwd · OTP</text>
-        <text x="465" y="66">Token watcher</text><text x="465" y="82" fill="#8A7F69" font-size="10">detect SPL</text>
-        <text x="465" y="226">Splitter</text><text x="465" y="242" fill="#8A7F69" font-size="10">atomic multi-send</text>
-        <text x="655" y="146">Jupiter swap</text><text x="655" y="162" fill="#8A7F69" font-size="10">best route + gates</text>
+        <text x="275" y="146">Allowlist gate</text><text x="275" y="162" fill="#8A7F69" font-size="10">numeric ID</text>
+        <text x="465" y="66">Watchers</text><text x="465" y="82" fill="#8A7F69" font-size="10">detect SOL + SPL</text>
+        <text x="465" y="226">Cold forward</text><text x="465" y="242" fill="#8A7F69" font-size="10">drain above buffer</text>
+        <text x="655" y="146">Swap</text><text x="655" y="162" fill="#8A7F69" font-size="10">Jupiter/Raydium + gates</text>
         <text x="820" y="146" fill="#DA3907" font-weight="700">Signer</text><text x="820" y="162" fill="#8A7F69" font-size="10">isolated key</text>
       </g>
       <!-- arrows -->
@@ -78,9 +78,9 @@
     <div class="sec-head reveal"><span class="sec-idx">01 / MODULES</span><h2 class="section-title" data-split>The pieces.</h2></div>
     <div class="card-grid cols-2 reveal">
       <div class="card"><span class="kicker">src/bot</span><h3>Telegram layer</h3><p>Receives commands, routes them, suggests the closest command on a typo. Holds no keys and makes no signing decisions on its own.</p></div>
-      <div class="card"><span class="kicker">src/auth</span><h3>The gate</h3><p>Allowlist, Argon2 credentials, session state, and single-use OTP replay tracking. Every fund-moving path passes through here first.</p></div>
-      <div class="card"><span class="kicker">src/watch · src/swap</span><h3>Watcher &amp; Jupiter</h3><p>The token watcher spots incoming SPL across child accounts; the swap module routes to SOL through Jupiter with slippage and price-impact gates.</p></div>
-      <div class="card"><span class="kicker">src/split</span><h3>Splitter</h3><p>Parses <code class="mono">/send</code> input, resolves aliases against a fixed contacts file or a literal address, validates, and builds one atomic multi-recipient transaction.</p></div>
+      <div class="card"><span class="kicker">src/auth</span><h3>The gate</h3><p>A numeric-ID (and username) allowlist. Every message passes through here first; grants and denials both hit the audit log. Argon2 password login and OTP replay tracking are planned, not in this build.</p></div>
+      <div class="card"><span class="kicker">src/watch · src/swap</span><h3>Watchers &amp; swap</h3><p>SOL and token watchers spot incoming deposits across child accounts and announce them; the swap module routes non-SOL to SOL through Jupiter — Raydium as fallback — with slippage and min-output gates, then closes the emptied account. <code class="mono">src/swap/forwardSol</code> drains SOL above the buffer to a cold wallet.</p></div>
+      <div class="card"><span class="kicker">src/split</span><h3>Splitter <span class="gate warn" style="margin-left:0.4rem;">planned</span></h3><p>Designed to parse <code class="mono">/send</code> into amounts + destinations, resolve aliases against a fixed contacts file or a literal address, and build one atomic multi-recipient transaction. Not wired to the bot yet.</p></div>
       <div class="card"><span class="kicker">src/vault</span><h3>Signer boundary</h3><p>One interface, swappable backend: local AES-256-GCM keystore, KMS, or custody. The rest of the app asks it to sign — it never sees the raw key.</p></div>
       <div class="card"><span class="kicker">src/audit</span><h3>Ledger</h3><p>Append-only, hash-chained log of every attempt. <code class="mono">verifyAuditChain()</code> re-walks the chain to prove nothing was edited.</p></div>
     </div>
@@ -88,13 +88,13 @@
 
   <!-- FLOW -->
   <section style="margin-top:3.8rem;">
-    <div class="sec-head reveal"><span class="sec-idx">02 / A SEND, STEP BY STEP</span><h2 class="section-title" data-split>One command's path.</h2></div>
+    <div class="sec-head reveal"><span class="sec-idx">02 / A SWEEP, STEP BY STEP</span><h2 class="section-title" data-split>One token's path.</h2></div>
     <div class="ledger reveal">
-      <div class="ledger-row"><span class="node"></span><span><strong>1 · Parse</strong> — <code class="mono">/send</code> parsed into amounts + destinations. LLM parsing (optional) can only map to a known alias or literal address.</span><span class="hash">src/split/parser</span></div>
-      <div class="ledger-row"><span class="node"></span><span><strong>2 · Auth</strong> — numeric ID on the allowlist, active session, fresh OTP that isn't already burned.</span><span class="hash">src/auth</span></div>
-      <div class="ledger-row"><span class="node"></span><span><strong>3 · Validate</strong> — every recipient resolves to a real address; amounts are within bounds.</span><span class="hash">src/split/validator</span></div>
-      <div class="ledger-row"><span class="node" style="background:var(--signal)"></span><span><strong>4 · Sign</strong> — the built transaction crosses the custody boundary to the signer. The key never comes back out.</span><span class="hash">src/vault/signer</span></div>
-      <div class="ledger-row"><span class="node"></span><span><strong>5 · Broadcast + log</strong> — one atomic transaction sent; the attempt and result append to the hash-chained ledger.</span><span class="hash">src/audit/log</span></div>
+      <div class="ledger-row"><span class="node"></span><span><strong>1 · Detect</strong> — the token watcher spots an incoming SPL token across the wallet's child accounts and announces it in the group.</span><span class="hash">src/watch/tokenWatcher</span></div>
+      <div class="ledger-row"><span class="node"></span><span><strong>2 · Route</strong> — if sweep is ON, quote a route to SOL via Jupiter, falling back to Raydium; reject anything that fails the slippage or min-output gate.</span><span class="hash">src/swap/sweep</span></div>
+      <div class="ledger-row"><span class="node" style="background:var(--signal)"></span><span><strong>3 · Sign</strong> — the built swap crosses the custody boundary to the signer. The key never comes back out.</span><span class="hash">src/vault/signer</span></div>
+      <div class="ledger-row"><span class="node"></span><span><strong>4 · Reclaim + forward</strong> — the emptied token account is closed for its rent, and SOL above the hot-wallet buffer forwards to the cold address.</span><span class="hash">src/swap/forwardSol</span></div>
+      <div class="ledger-row"><span class="node"></span><span><strong>5 · Log</strong> — the attempt and result append to the hash-chained ledger.</span><span class="hash">src/audit/log</span></div>
     </div>
   </section>
 

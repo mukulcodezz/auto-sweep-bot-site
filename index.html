@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Auto-Sweep Bot — a Solana wallet that never sees its own key</title>
-<meta name="description" content="A Telegram-operated Solana bot that auto-swaps any incoming SPL token back to SOL through Jupiter, splits payouts atomically, and never lets the chat layer touch the private key. Admin-gated, devnet-only."/>
+<meta name="description" content="A Telegram-operated Solana bot that auto-swaps any incoming SPL token back to SOL through Jupiter (Raydium fallback), forwards swept SOL to a cold wallet, and never lets the chat layer touch the private key. Allowlist-gated, devnet-only. Atomic payout splitting and TOTP are planned."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
@@ -46,10 +46,11 @@
     <h1 class="display hero" data-split>A wallet that never sees its own key.</h1>
     <div class="hero-grid" style="margin-top:2.4rem;">
       <p class="lead reveal d1">
-        Any SPL token that lands in the wallet is detected and swapped back to SOL through Jupiter
-        at the best available route — no command needed. An admin can split payouts to a fixed
-        contact list in one atomic transaction. Every fund-moving step is gated behind a numeric
-        Telegram-ID allowlist, an Argon2 password, and a single-use TOTP that burns on first use.
+        Any SPL token that lands in the wallet is detected and swapped back to SOL through Jupiter —
+        Raydium as fallback — at the best available route, no command needed. Swept SOL forwards to a
+        cold wallet above a set buffer. Every command is gated behind a numeric Telegram-ID allowlist
+        and appended to a hash-chained audit log. Atomic payout splitting and a single-use TOTP layer
+        are <span class="sig">planned</span>, not yet shipped.
       </p>
       <div class="reveal d2" style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center;">
         <a class="btn" href="setup.html">Get started <span class="arrow">→</span></a>
@@ -79,9 +80,12 @@
             <div class="msg bot" data-delay="1100">
               <span class="ok">✓ Swept</span> USDC → 0.0161 SOL &nbsp;·&nbsp; tx 5Zp9m…rY3a
             </div>
-            <div class="msg me" data-delay="1400">/send 118204 send 1 to alice, 2 to bob</div>
             <div class="msg bot" data-delay="1300">
-              <span class="ok">✓ Sent</span> in one atomic transaction.<br/>signature 5xJk…9mQp
+              <span class="ok">✓ Forwarded</span> 0.0161 SOL to cold wallet 7bXq…4mR2 &nbsp;·&nbsp; above buffer
+            </div>
+            <div class="msg me" data-delay="1400">/autosweep status</div>
+            <div class="msg bot" data-delay="1300">
+              Auto-sweep: <strong>ON</strong><br/>Wallet 7Ge2…Vk9p · Balance 0.0161 SOL
             </div>
           </div>
         </div>
@@ -89,11 +93,11 @@
         <div class="reveal d1" style="align-self:center;">
           <p class="eyebrow" style="margin-bottom:1rem;">What you're looking at</p>
           <p class="prose" style="font-size:1.05rem;">
-            The first two lines happened <strong>with no command</strong> — a token arrived, the bot
-            swept it. The third is an admin splitting SOL to two aliases; the six digits are a fresh
-            TOTP, typed inline, <strong>burned the instant it's used</strong>. That's the whole product:
-            money keeps moving toward SOL and out to known destinations, and nothing dangerous happens
-            without an out-of-band code.
+            The first three lines happened <strong>with no command</strong> — a token arrived, the bot
+            swept it to SOL, then forwarded the SOL to a cold wallet above the buffer. The last is an
+            admin checking status. That's the shipped product: money keeps moving toward SOL and off
+            the hot wallet on its own, with every command gated by the allowlist and logged. Inline
+            payout splitting with a burn-on-use TOTP is on the roadmap, not live yet.
           </p>
         </div>
       </div>
@@ -101,7 +105,7 @@
     <!-- stat rail -->
     <div class="card-grid cols-3 reveal d2">
       <div class="card"><span class="stat"><span data-count="3">0</span></span><span class="stat u">signer backends</span><p style="margin-top:0.6rem;">Local encrypted keystore, KMS, or custody — swappable behind one interface.</p></div>
-      <div class="card"><span class="stat"><span data-count="1">0</span></span><span class="stat u">use per OTP</span><p style="margin-top:0.6rem;">Every code is burned on first use and can't be replayed by anyone.</p></div>
+      <div class="card"><span class="stat"><span data-count="2">0</span></span><span class="stat u">DEX routers · w/ fallback</span><p style="margin-top:0.6rem;">Jupiter first, Raydium as fallback. Slippage and min-output guards on every swap.</p></div>
       <div class="card"><span class="stat"><span data-count="100">0</span>%</span><span class="stat u">logged attempts</span><p style="margin-top:0.6rem;">Allowed or denied, every command lands in a hash-chained audit log.</p></div>
     </div>
   </div>
@@ -126,9 +130,9 @@
         <p>Slippage and a separate price-impact ceiling both apply. A route that would exit into an illiquid pool is rejected <em>before</em> it is ever signed — not unwound afterward.</p>
       </div>
       <div class="card reveal d2">
-        <span class="kicker">Splitter</span>
-        <h3>Atomic payouts</h3>
-        <p>Pay multiple recipients in a single transaction. Destinations are aliases from an admin-maintained contact file or a literal address — never a name the bot invents from free text.</p>
+        <span class="kicker">Cold forward</span>
+        <h3>Hot wallet stays thin</h3>
+        <p>Swept SOL — and direct SOL deposits — forward to a cold wallet above a set buffer, so the Telegram-operated hot wallet never sits on more than it needs. Emptied token accounts are closed and their rent reclaimed.</p>
       </div>
     </div>
   </div>
@@ -148,9 +152,9 @@
         <p>Commands execute only for pre-registered Telegram user IDs. Usernames change hands; numeric IDs don't. Spoofing by renaming a display name does nothing here.</p>
       </div>
       <div class="card">
-        <span class="kicker">OTP burn-on-use</span>
-        <h3>Single-use, shared-secret-aware</h3>
-        <p>Every fund-moving command needs a fresh TOTP, even mid-session. Replay tracking is global across all admins, so a code burned by one can't be reused by another.</p>
+        <span class="kicker">Mainnet-refuse guard</span>
+        <h3>Won't run real funds on a hot key</h3>
+        <p>The config loader hard-refuses to start against <code class="mono">mainnet-beta</code> with a local keystore signer. It's a guard clause in code, not a policy line — mainnet needs a custody signer wired in first.</p>
       </div>
       <div class="card">
         <span class="kicker">Isolated signer</span>
@@ -189,13 +193,13 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="sec-idx">04 / BUILD STATE</span>
-      <h2 class="section-title" data-split>Built through phase five. Devnet only.</h2>
+      <h2 class="section-title" data-split>Shipped and running on devnet.</h2>
     </div>
     <div class="pipeline reveal">
       <div class="phase done"><span class="n">01</span><div class="sq"></div><div class="name">Auth &amp; vault</div><div class="when">shipped</div></div>
-      <div class="phase done"><span class="n">02</span><div class="sq"></div><div class="name">Auto-sweep</div><div class="when">shipped</div></div>
-      <div class="phase done"><span class="n">03</span><div class="sq"></div><div class="name">Splitter</div><div class="when">shipped</div></div>
-      <div class="phase done"><span class="n">04</span><div class="sq"></div><div class="name">Security review</div><div class="when">shipped</div></div>
+      <div class="phase done"><span class="n">02</span><div class="sq"></div><div class="name">Auto-sweep + routing</div><div class="when">shipped</div></div>
+      <div class="phase done"><span class="n">03</span><div class="sq"></div><div class="name">Cold-forward &amp; audit</div><div class="when">shipped</div></div>
+      <div class="phase"><span class="n">04</span><div class="sq"></div><div class="name">Splitter &amp; TOTP</div><div class="when">planned</div></div>
       <div class="phase active"><span class="n">05</span><div class="sq"></div><div class="name">Mainnet custody</div><div class="when">locked · needs KMS signer</div></div>
     </div>
     <p class="prose reveal" style="margin-top:1.4rem;">
@@ -206,12 +210,40 @@
   </div>
 </section>
 
+<!-- UPCOMING -->
+<section class="section">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-idx">05 / UPCOMING</span>
+      <h2 class="section-title" data-split>On the roadmap — not live yet.</h2>
+    </div>
+    <p class="prose reveal" style="max-width:60ch;margin-bottom:2rem;">These are designed but not shipped. Nothing below runs in the current build; the bot today is auto-sweep, cold-forward, announcements, and the allowlist gate.</p>
+    <div class="card-grid cols-3">
+      <div class="card reveal">
+        <span class="kicker" style="color:var(--signal)">Planned</span>
+        <h3>Atomic payout splitter</h3>
+        <p><code class="mono">/send 1 to alice, 2 to bob</code> paying multiple recipients in one transaction, resolving aliases from a fixed contacts file or a literal address. Optional Groq parsing for looser phrasing.</p>
+      </div>
+      <div class="card reveal d1">
+        <span class="kicker" style="color:var(--signal)">Planned</span>
+        <h3>Admin login + single-use TOTP</h3>
+        <p><code class="mono">/login</code> with an Argon2 password and a 30-minute session, plus a burn-on-use TOTP required fresh for every fund-moving command. Today access is the numeric-ID allowlist only.</p>
+      </div>
+      <div class="card reveal d2">
+        <span class="kicker" style="color:var(--signal)">Locked</span>
+        <h3>Mainnet custody</h3>
+        <p>A KMS / HSM-backed signer behind the existing Signer interface, with withdrawal caps and command rate limits, plus an independent third-party audit before real funds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="section">
   <div class="wrap reveal" style="text-align:center;border:1px solid var(--line-2);background:var(--card);padding:clamp(2.5rem,7vw,5rem) var(--gutter);position:relative;">
     <p class="eyebrow" style="justify-content:center;margin-bottom:1.2rem;">Ten minutes, one authenticator app</p>
     <h2 class="section-title" data-split style="max-width:16ch;margin-inline:auto;">Point it at a devnet wallet and watch it sweep.</h2>
-    <p class="lead" style="margin:1.4rem auto 2rem;">BotFather token, your numeric ID, an Argon2 password hash, a TOTP secret, an encrypted keystore. The bot prints a public key — you fund it from a faucet, never real money.</p>
+    <p class="lead" style="margin:1.4rem auto 2rem;">BotFather token, your group chat ID, your numeric ID on the allowlist, an encrypted keystore. The bot prints a public key — you fund it from a faucet, never real money.</p>
     <a class="btn" href="setup.html">Setup guide <span class="arrow">→</span></a>
   </div>
 </section>

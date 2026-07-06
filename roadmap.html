@@ -33,34 +33,44 @@
 <div class="wrap">
   <p class="eyebrow reveal" style="margin-bottom:1.2rem;"><span class="mk">◇</span> Where it stands · what gates mainnet</p>
   <h1 class="display hero" data-split style="font-size:clamp(2.6rem,7vw,5rem);">Status &amp; roadmap.</h1>
-  <p class="lead reveal d1" style="margin-top:1.6rem;">Phases one through five are built and running on devnet. The line to mainnet is a custody signer and an independent audit — not a feature list.</p>
+  <p class="lead reveal d1" style="margin-top:1.6rem;">Phases one through three are built and running on devnet: auth, auto-sweep with best-rate routing, and cold-forward with a hash-chained audit log. The splitter and a TOTP layer are designed but not yet shipped. The line to mainnet is a custody signer and an independent audit.</p>
 
   <!-- STATUS RAIL -->
   <div class="card-grid cols-3 reveal" style="margin-top:3rem;">
-    <div class="card"><span class="stat" style="color:var(--verify)"><span data-count="5">0</span></span><span class="stat u">phases shipped</span></div>
+    <div class="card"><span class="stat" style="color:var(--verify)"><span data-count="3">0</span></span><span class="stat u">phases shipped</span></div>
     <div class="card"><span class="stat">devnet</span><span class="stat u">only, enforced in code</span></div>
     <div class="card"><span class="stat" style="color:var(--signal)">1</span><span class="stat u">audit pending · 3rd-party</span></div>
   </div>
 
   <!-- PIPELINE -->
   <section style="margin-top:3.6rem;">
-    <div class="sec-head reveal"><span class="sec-idx">01 / PIPELINE</span><h2 class="section-title" data-split>The five phases.</h2></div>
+    <div class="sec-head reveal"><span class="sec-idx">01 / PIPELINE</span><h2 class="section-title" data-split>The phases.</h2></div>
     <div class="pipeline reveal">
       <div class="phase done"><span class="n">01</span><div class="sq"></div><div class="name">Auth &amp; vault</div><div class="when">shipped</div></div>
-      <div class="phase done"><span class="n">02</span><div class="sq"></div><div class="name">Auto-sweep</div><div class="when">shipped</div></div>
-      <div class="phase done"><span class="n">03</span><div class="sq"></div><div class="name">Splitter</div><div class="when">shipped</div></div>
-      <div class="phase done"><span class="n">04</span><div class="sq"></div><div class="name">Security review</div><div class="when">shipped</div></div>
-      <div class="phase active"><span class="n">05</span><div class="sq"></div><div class="name">Mainnet custody</div><div class="when">in progress · locked</div></div>
+      <div class="phase done"><span class="n">02</span><div class="sq"></div><div class="name">Auto-sweep + routing</div><div class="when">shipped</div></div>
+      <div class="phase done"><span class="n">03</span><div class="sq"></div><div class="name">Cold-forward &amp; audit</div><div class="when">shipped</div></div>
+      <div class="phase"><span class="n">04</span><div class="sq"></div><div class="name">Splitter &amp; TOTP</div><div class="when">planned</div></div>
+      <div class="phase active"><span class="n">05</span><div class="sq"></div><div class="name">Mainnet custody</div><div class="when">locked · needs KMS signer</div></div>
+    </div>
+  </section>
+
+  <!-- UPCOMING FEATURES -->
+  <section style="margin-top:3.6rem;">
+    <div class="sec-head reveal"><span class="sec-idx">02 / UPCOMING</span><h2 class="section-title" data-split>Designed, not shipped.</h2></div>
+    <div class="card-grid cols-3 reveal">
+      <div class="card"><span class="kicker" style="color:var(--signal)">Planned</span><h3>Atomic payout splitter</h3><p><code class="mono">/send</code> paying multiple recipients in one transaction, resolving aliases from a fixed contacts file or a literal address. Optional Groq parsing for looser phrasing.</p></div>
+      <div class="card"><span class="kicker" style="color:var(--signal)">Planned</span><h3>Login + single-use TOTP</h3><p><code class="mono">/login</code> with an Argon2 password and a session, plus a burn-on-use TOTP required fresh for every fund-moving command. Today access is the allowlist only.</p></div>
+      <div class="card"><span class="kicker" style="color:var(--signal)">Planned</span><h3>Group secret scrub</h3><p>Auto-delete of any password or OTP typed into a group by mistake, and immediate burn of the code. Pairs with the DM-only fund protocol.</p></div>
     </div>
   </section>
 
   <!-- WHAT GATES MAINNET -->
   <section style="margin-top:3.6rem;">
-    <div class="sec-head reveal"><span class="sec-idx">02 / BEFORE MAINNET</span><h2 class="section-title" data-split>What has to land first.</h2></div>
+    <div class="sec-head reveal"><span class="sec-idx">03 / BEFORE MAINNET</span><h2 class="section-title" data-split>What has to land first.</h2></div>
     <div class="card-grid cols-2 reveal">
       <div class="card"><span class="kicker">Custody</span><h3>Real KMS / HSM signer</h3><p>The local keystore is devnet-only by design. Mainnet requires a custody-backed signer wired into the existing Signer interface — until then the bot refuses to start.</p></div>
       <div class="card"><span class="kicker">Limits</span><h3>Withdrawal caps &amp; rate limits</h3><p>Per-window value ceilings and command rate limiting to bound the blast radius of a hijacked live session.</p></div>
-      <div class="card"><span class="kicker">Resilience</span><h3>Persisted OTP-burn &amp; nonce state</h3><p>Replay and nonce tracking survives restarts, so a process bounce can't reopen a used code.</p></div>
+      <div class="card"><span class="kicker">Resilience</span><h3>Persisted OTP-burn &amp; nonce state</h3><p>Once the TOTP layer ships, replay and nonce tracking must survive restarts, so a process bounce can't reopen a used code.</p></div>
       <div class="card"><span class="kicker">Assurance</span><h3>Independent third-party audit</h3><p>Internal review and a test pass are done. An external audit is the last gate before real funds.</p></div>
     </div>
     <p class="prose reveal" style="margin-top:1.2rem;font-size:0.9rem;">Items on this list are targets, not commitments with dates. This is a custody-boundary experiment — mainnet ships when it's earned, not scheduled.</p>
